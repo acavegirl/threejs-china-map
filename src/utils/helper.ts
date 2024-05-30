@@ -12,3 +12,8 @@ export function initAxesHelper() {
   const axesHelper = new THREE.AxesHelper(100);
   return axesHelper
 }
+
+export function initDirectionalLightHelper(light: THREE.DirectionalLight) {
+  const lightHelper = new THREE.DirectionalLightHelper(light);
+  return lightHelper
+}

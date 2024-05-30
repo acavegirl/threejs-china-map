@@ -22,25 +22,27 @@ import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
  */
 export function generateMapObject3D(
   geojsonData: GeoJsonType,
-  projectionFnParam: ProjectionFnParamType
-) {
+  borderGeoJson: GeoJsonType,
+  projectionFnParam: ProjectionFnParamType,
+){
   // 地图对象
   const mapObject3D = new THREE.Object3D();
   const label2dData: any = []; // 存储自定义 2d 标签数据
 
-
-  // 地图数据
-  const { features: basicFeatures } = geojsonData;
   // 地图中心和缩放比例
   const { center, scale } = projectionFnParam;
-
   const projectionFn = d3
     .geoMercator()
     .center(center)
     .scale(scale)
     .translate([0, 0]);
 
-  // 每个省的数据
+  // 背景
+  const bgMapObject3D = new THREE.Object3D();
+  // 地图数据
+  const { features: basicFeatures } = geojsonData;
+
+    // 每个省的数据
   basicFeatures.forEach((basicFeatureItem: GeoJsonFeature) => {
     // 每个省份的地图对象
     const provinceMapObject3D = new THREE.Object3D() as ExtendObject3D;
@@ -70,7 +72,7 @@ export function generateMapObject3D(
     if (featureType === "MultiPolygon") {
       featureCoords.forEach((multiPolygon: [number, number][][]) => {
         multiPolygon.forEach((polygon: [number, number][]) => {
-          const { mesh, line } = drawExtrudeMesh(polygon, projectionFn);
+          const { mesh, line } = drawExtrudeMesh(polygon, projectionFn, mapConfig.bg);
           provinceMapObject3D.add(mesh);
           provinceMapObject3D.add(line);
         });
@@ -80,23 +82,41 @@ export function generateMapObject3D(
     // Polygon 类型
     if (featureType === "Polygon") {
       featureCoords.forEach((polygon: [number, number][]) => {
-        const { mesh, line } = drawExtrudeMesh(polygon, projectionFn);
+        const { mesh, line } = drawExtrudeMesh(polygon, projectionFn, mapConfig.bg);
         provinceMapObject3D.add(mesh);
         provinceMapObject3D.add(line);
       });
     }
 
-    mapObject3D.add(provinceMapObject3D);
+    bgMapObject3D.add(provinceMapObject3D);
   });
 
-  return { mapObject3D, label2dData };
+
+
+  // 地图对象
+  const borderMapObject3D = new THREE.Object3D();
+  const { features: borderFeatures } = borderGeoJson;
+  const { geometry: borderGeo } = borderFeatures[0]
+
+  borderGeo.coordinates.forEach((multiPolygon: [number, number][][]) => {
+    multiPolygon.forEach((polygon: [number, number][]) => {
+      const { mesh, line } = drawExtrudeMeshBorder(polygon, projectionFn, mapConfig.border);
+      borderMapObject3D.add(mesh);
+      borderMapObject3D.add(line);
+    });
+  });
+  mapObject3D.add(borderMapObject3D);
+  mapObject3D.add(bgMapObject3D)
+  mapObject3D.position.z = 1
+  return { mapObject3D, label2dData, bgMapObject3D, borderMapObject3D }
 }
 
 
 // 绘制挤出的材质
 function drawExtrudeMesh(
   point: [number, number][],
-  projectionFn: any
+  projectionFn: any,
+  mapConfig: any,
 ): any {
   const shape = new THREE.Shape();
   const pointsArray = [];
@@ -162,6 +182,86 @@ function drawExtrudeMesh(
   const lineMaterial = new LineMaterial({
     color: mapConfig.topLineColor,
     linewidth: mapConfig.topLineWidth,
+  });
+  lineMaterial.resolution.set(window.innerWidth, window.innerHeight);
+  const line = new Line2(lineGeometry, lineMaterial);
+
+  return { mesh, line };
+}
+
+
+// 绘制挤出的材质
+function drawExtrudeMeshBorder(
+  point: [number, number][],
+  projectionFn: any,
+  mapConfig: any,
+): any {
+  const shape = new THREE.Shape();
+  const pointsArray = [];
+
+  for (let i = 0; i < point.length; i++) {
+    const [x, y]: any = projectionFn(point[i]); // 将每一个经纬度转化为坐标点
+    if (i === 0) {
+      shape.moveTo(x, -y);
+    }
+    shape.lineTo(x, -y);
+    pointsArray.push(x, -y, mapConfig.topLineZIndex);
+  }
+
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: mapConfig.mapDepth, // 挤出的形状深度
+    bevelEnabled: false, // 对挤出的形状应用是否斜角
+  });
+
+  const material = new THREE.MeshPhongMaterial({
+    color: mapConfig.mapColor,
+    transparent: mapConfig.mapTransparent,
+    opacity: mapConfig.mapOpacity,
+  });
+
+  const materialSide = new THREE.ShaderMaterial({
+    uniforms: {
+      color1: {
+        value: new THREE.Color(mapConfig.mapSideColor1),
+      },
+      color2: {
+        value: new THREE.Color(mapConfig.mapSideColor2),
+      },
+    },
+    vertexShader: `
+      varying vec3 vPosition;
+      void main() {
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 color1;
+      uniform vec3 color2;
+      varying vec3 vPosition;
+      void main() {
+        vec3 mixColor = mix(color1, color2, 0.5 - vPosition.z * 0.2); // 使用顶点坐标 z 分量来控制混合
+        gl_FragColor = vec4(mixColor, 1.0);
+      }
+    `,
+    //   wireframe: true,
+  });
+
+  const mesh: any = new THREE.Mesh(geometry, [material, materialSide]);
+  // userData 存储自定义属性
+  mesh.userData = {
+    isChangeColor: true,
+  };
+
+  // 边框线，赋值空间点坐标，3个一组
+  const lineGeometry = new LineGeometry();
+  lineGeometry.setPositions(pointsArray);
+
+  const lineMaterial = new LineMaterial({
+    color: mapConfig.topLineColor,
+    linewidth: mapConfig.topLineWidth,
+    transparent: true,
+    opacity: 0.3,
   });
   lineMaterial.resolution.set(window.innerWidth, window.innerHeight);
   const line = new Line2(lineGeometry, lineMaterial);

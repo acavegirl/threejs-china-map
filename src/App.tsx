@@ -6,11 +6,12 @@ import type { ProjectionFnParamType } from "@/types/chinaMap";
 
 export default () => {
   const [geoJson, setGeoJson] = useState<GeoJsonType>();
+  const [borderGeoJson, setBorderGeoJson] = useState<GeoJsonType>();
   const [mapAdCode, setMapAdCode] = useState<number>(100000);
   const [projectionFnParam, setProjectionFnParam] =
     useState<ProjectionFnParamType>({
       center: [104.0, 37.5],
-      scale: 40,
+      scale: 30,
     });
 
   useEffect(() => {
@@ -23,13 +24,20 @@ export default () => {
       `https://geo.datav.aliyun.com/areas_v3/bound/${code}_full.json`
     );
     const { data } = response;
+
+    const borderResponse = await axios.get(
+      `https://geo.datav.aliyun.com/areas_v3/bound/100000.json`
+    );
+    const { data: borderData } = borderResponse;
     setGeoJson(data);
+    setBorderGeoJson(borderData);
   }, []);
 
   return (
     <>
-      {geoJson && (
+      {geoJson && borderGeoJson && (
         <ChinaMap
+          borderGeoJson={borderGeoJson}
           geoJson={geoJson}
           projectionFnParam={projectionFnParam}
         />

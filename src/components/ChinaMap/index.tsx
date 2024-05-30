@@ -9,23 +9,24 @@ import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
 import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG } from "@/utils/drawMap";
 import { zoomMap, modelAnime, spotAnime } from "@/utils/anime";
-import { initLight } from "@/utils/light";
+import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
 import { initRenderPass } from "@/utils/renderPass";
 import { initOutlinePass } from "@/utils/outlinePass";
 import { initComposer } from "@/utils/effectComposer";
-import { initAxesHelper } from "@/utils/helper";
+import { initAxesHelper, initDirectionalLightHelper } from "@/utils/helper";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 
 interface Props {
+  borderGeoJson: GeoJsonType;
   geoJson: GeoJsonType;
   projectionFnParam: ProjectionFnParamType; // 地图中心和缩放
 }
 
 export default (props: Props) => {
-  const { geoJson, projectionFnParam } = props;
+  const { geoJson, projectionFnParam, borderGeoJson } = props;
 
   const mapRef = useRef<any>();
   const onResizeEventRef = useRef<any>()
@@ -51,7 +52,7 @@ export default (props: Props) => {
     /**
      * 初始化模型（绘制3D模型）
      */
-    const { mapObject3D, label2dData } = generateMapObject3D(geoJson, projectionFnParam);
+    const { mapObject3D, label2dData, bgMapObject3D } = generateMapObject3D(geoJson, borderGeoJson, projectionFnParam);
     scene.add(mapObject3D);
 
     /**
@@ -81,8 +82,12 @@ export default (props: Props) => {
     /**
      * 光源
      */
-    const light = initLight()
-    scene.add(light)
+    const light0 = initAmbientLight(4)
+    const light1 = initDirectionalLight([0, 40, 6], 4.5)
+    // const light2 = initDirectionalLight([10, 50, 20], 2)
+    scene.add(light0)
+    scene.add(light1)
+    // scene.add(light2)
 
     /**
      * 通道 & 组合器
@@ -120,7 +125,10 @@ export default (props: Props) => {
      */
     const axesHelper = initAxesHelper()
     scene.add(axesHelper);
-
+    const lightHelper1 = initDirectionalLightHelper(light1)
+    // const lightHelper2 = initDirectionalLightHelper(light2)
+    scene.add(lightHelper1);
+    // scene.add(lightHelper2);
 
     /**
      * 视窗resize
@@ -130,7 +138,6 @@ export default (props: Props) => {
       const canvas = renderer.domElement
       // 更新摄像头
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      console.log(canvas.clientWidth)
       // 更新摄像机的投影矩阵
       camera.updateProjectionMatrix();
       // 更新渲染器
@@ -150,9 +157,30 @@ export default (props: Props) => {
     };
 
 
-  }, [geoJson, mapRef])
+  }, [geoJson, mapRef, borderGeoJson])
 
-  return (<>
+  return (<div style={{
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    position: "relative",
+  }}>
     <canvas ref={mapRef} />
-  </>)
+    <div
+      style={{
+        position: "absolute",
+        zIndex: 999,
+        background: "#010209",
+        width: "350px",
+        height: "200px",
+        padding: "10px",
+        border: "2px solid #163FA2",
+        visibility: "hidden",
+        color: "#3B93E6",
+        pointerEvents: "none",
+      }}
+    >
+      {"this is ToolTip"}
+    </div>
+  </div>)
 }
