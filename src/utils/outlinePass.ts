@@ -21,6 +21,7 @@ export function initOutlinePass(scene: THREE.Scene, camera: THREE.Camera, mapObj
   outlinePass.edgeStrength = outlinePassConfig.edgeStrength // 边缘的强度，值越高边框范围越大
   outlinePass.pulsePeriod = outlinePassConfig.pulsePeriod// 闪烁频率，值越大频率越低
   outlinePass.visibleEdgeColor.set(outlinePassConfig.visibleEdgeColor) // 呼吸显示的颜色
+  outlinePass.hiddenEdgeColor.set(outlinePassConfig.hiddenEdgeColor)
 
   return outlinePass
 }

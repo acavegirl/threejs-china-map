@@ -8,6 +8,7 @@ export default () => {
   const [geoJson, setGeoJson] = useState<GeoJsonType>();
   const [borderGeoJson, setBorderGeoJson] = useState<GeoJsonType>();
   const [mapAdCode, setMapAdCode] = useState<number>(100000);
+  // 地图中心和缩放比例，用于进行坐标投影
   const [projectionFnParam, setProjectionFnParam] =
     useState<ProjectionFnParamType>({
       center: [104.0, 37.5],

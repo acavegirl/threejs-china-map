@@ -26,6 +26,7 @@ function getDynamicMapScale(
 }
 
 /**
+ * 初次加载时按比例放大地图
  * @param mapObject
  * @param containerRef
  */
@@ -42,8 +43,8 @@ export const spotAnime = (spotList: any) => {
   spotList.forEach((mesh: any) => {
     mesh._s += 0.01;
     mesh.scale.set(1 * mesh._s, 1 * mesh._s, 1 * mesh._s);
-    if (mesh._s <= 2) {
-      mesh.material.opacity = 2 - mesh._s;
+    if (mesh._s <= 1.6) {
+      mesh.material.opacity = 1.6 - mesh._s;
     } else {
       mesh._s = 1;
     }
@@ -58,4 +59,19 @@ export const spotAnime = (spotList: any) => {
 export const modelAnime = (clock: THREE.Clock, modelMixer: THREE.AnimationMixer[]) => {
   const delta = clock.getDelta();
   modelMixer.map((item: any) => item.update(delta));
+}
+
+/**
+ * 飞行线动画
+ * @param flySpotList 
+ */
+export const flyAnime = (flySpotList: THREE.Mesh[]) => {
+  // 飞行的圆点
+  flySpotList.forEach(function (mesh: any) {
+    mesh._s += 0.003;
+    let tankPosition = new THREE.Vector3();
+    // getPointAt() 根据弧长在曲线上的位置。必须在范围[0，1]内。
+    tankPosition = mesh.curve.getPointAt(mesh._s % 1);
+    mesh.position.set(tankPosition.x, tankPosition.y, tankPosition.z);
+  });
 }

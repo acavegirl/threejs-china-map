@@ -7,8 +7,8 @@ import { ProjectionFnParamType } from "@/types/chinaMap";
 import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
-import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG } from "@/utils/drawMap";
-import { zoomMap, modelAnime, spotAnime } from "@/utils/anime";
+import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType } from "@/utils/drawMap";
+import { zoomMap, modelAnime, spotAnime, flyAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
 import { initRenderPass } from "@/utils/renderPass";
@@ -61,6 +61,7 @@ export default (props: Props) => {
     const { spotObject3D, spotList } = generateMapSpot(label2dData);
     mapObject3D.add(spotObject3D);
 
+    // console.log('label2dData', label2dData);
     /**
      * 加载model，用label2dData映射
      */
@@ -72,6 +73,15 @@ export default (props: Props) => {
       mapObject3D.add(modelObject3D);
     })
     
+    /**
+     * 绘制飞行线
+     */
+    const LineData: [XYCoordType, XYCoordType][] = [
+      [label2dData[0].featureCenterCoord, label2dData[4].featureCenterCoord],
+      [label2dData[8].featureCenterCoord, label2dData[12].featureCenterCoord]
+    ]
+    const { flyObject3D, flySpotList } = generateFlyLine(LineData)
+    mapObject3D.add(flyObject3D);
 
     /**
      * 粒子背景
@@ -82,8 +92,8 @@ export default (props: Props) => {
     /**
      * 光源
      */
-    const light0 = initAmbientLight(4)
-    const light1 = initDirectionalLight([0, 40, 6], 4.5)
+    const light0 = initAmbientLight(3)
+    const light1 = initDirectionalLight([0, 40, 6], 3)
     // const light2 = initDirectionalLight([10, 50, 20], 2)
     scene.add(light0)
     scene.add(light1)
@@ -110,6 +120,7 @@ export default (props: Props) => {
     const animate = function () {
       modelAnime(clock, modelMixer)
       spotAnime(spotList)
+      flyAnime(flySpotList)
       composer.render();
       requestAnimationFrame(animate);
     };
@@ -155,32 +166,9 @@ export default (props: Props) => {
       }
       
     };
-
-
   }, [geoJson, mapRef, borderGeoJson])
 
-  return (<div style={{
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    position: "relative",
-  }}>
+  return (<>
     <canvas ref={mapRef} />
-    <div
-      style={{
-        position: "absolute",
-        zIndex: 999,
-        background: "#010209",
-        width: "350px",
-        height: "200px",
-        padding: "10px",
-        border: "2px solid #163FA2",
-        visibility: "hidden",
-        color: "#3B93E6",
-        pointerEvents: "none",
-      }}
-    >
-      {"this is ToolTip"}
-    </div>
-  </div>)
+  </>)
 }

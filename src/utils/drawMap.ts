@@ -14,6 +14,13 @@ import type { ProjectionFnParamType } from "@/types/chinaMap"
 import { mapConfig, particlesBGConfig } from '@/configs/chinaMap';
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
 
+export type XYCoordType = [number, number]
+
+interface Label2dDataType {
+  featureCenterCoord: XYCoordType; // 坐标系坐标
+  featureName: string;
+}
+
 /**
  * 生成地图3D模型
  * @param geojsonData 
@@ -27,7 +34,7 @@ export function generateMapObject3D(
 ){
   // 地图对象
   const mapObject3D = new THREE.Object3D();
-  const label2dData: any = []; // 存储自定义 2d 标签数据
+  const label2dData: Label2dDataType[] = []; // 存储自定义 2d 标签数据
 
   // 地图中心和缩放比例
   const { center, scale } = projectionFnParam;
@@ -36,6 +43,8 @@ export function generateMapObject3D(
     .center(center)
     .scale(scale)
     .translate([0, 0]);
+
+  // console.log(projectionFn())
 
   // 背景
   const bgMapObject3D = new THREE.Object3D();
@@ -190,7 +199,7 @@ function drawExtrudeMesh(
 }
 
 
-// 绘制挤出的材质
+// 绘制挤出的材质，边框透明层
 function drawExtrudeMeshBorder(
   point: [number, number][],
   projectionFn: any,
@@ -354,7 +363,7 @@ export const drawPointModel = (glb: GLTF, label2dData: any) => {
       mapConfig.spotZIndex
     );
     // 设置模型大小
-    clonedModel.scale.set(0.3, 0.3, 0.8);
+    clonedModel.scale.set(0.2, 0.2, 0.6);
     // clonedModel.rotateX(-Math.PI / 8);
     modelObject3D.add(clonedModel);
   });
@@ -419,4 +428,101 @@ export const generateParticlesBG = () => {
     const particles = new THREE.Points(particlesGeometry, material);
 
     return particles
+}
+
+
+/**
+ * 线上移动物体
+ */
+const drawFlySpot = (curve: any) => {
+  const aGeo = new THREE.SphereGeometry(0.16);
+  const aMater = new THREE.MeshBasicMaterial({
+    color: mapConfig.fly.spotColor,
+    side: THREE.DoubleSide,
+  });
+  const aMesh: any = new THREE.Mesh(aGeo, aMater);
+  // 保存曲线实例
+  aMesh.curve = curve;
+  aMesh._s = 0;
+  return aMesh;
+};
+
+/**
+ * 绘制两点之间连接的飞线
+ * @param coordStart 
+ * @param coordEnd 
+ * @returns 
+ */
+const drawLineBetween2Spot = (
+  coordStart: XYCoordType,
+  coordEnd: XYCoordType
+) => {
+  const [x0, y0, z0] = [...coordStart, mapConfig.spotZIndex];
+  const [x1, y1, z1] = [...coordEnd, mapConfig.spotZIndex];
+  // 使用 QuadraticBezierCurve3 创建 三维二次贝塞尔曲线
+  const curve = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(x0, -y0, z0),
+    new THREE.Vector3((x0 + x1) / 2, -(y0 + y1) / 2, 20),
+    new THREE.Vector3(x1, -y1, z1)
+  );
+
+  const flySpot = drawFlySpot(curve);
+
+  const lineGeometry = new THREE.BufferGeometry();
+  // 获取曲线上50个点
+  const points = curve.getPoints(50);
+  const positions = [];
+  // const colors = [];
+
+  // const color = new THREE.Color();
+
+  // 给每个顶点设置演示 实现渐变
+  for (let j = 0; j < points.length; j++) {
+    // color.setHSL(0.21 + j, 0.5, 0.55 + j * 0.0025); // 色
+    // colors.push(color.r, color.g, color.b);
+    positions.push(points[j].x, points[j].y, points[j].z);
+  }
+  // 放入顶点 和 设置顶点颜色
+  lineGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(new Float32Array(positions), 3, true)
+  );
+  // lineGeometry.setAttribute(
+  //   "color",
+  //   new THREE.BufferAttribute(new Float32Array(colors), 3, true)
+  // );
+
+  const material = new THREE.LineBasicMaterial({
+    // vertexColors: true,
+    color: mapConfig.fly.lineColor,
+    side: THREE.DoubleSide,
+    transparent: mapConfig.fly.lineTransparent,
+    opacity: mapConfig.fly.lineOpacity,
+  });
+  const flyLine = new THREE.Line(lineGeometry, material);
+
+  return { flyLine, flySpot };
+};
+
+/**
+ * 生成飞线
+ * @param coordStart 
+ * @param coordEnd 
+ */
+export const generateFlyLine = (connectLine: [XYCoordType, XYCoordType][]) => {
+  const flyObject3D = new THREE.Object3D();
+  const flySpotList: any = [];
+
+  connectLine.forEach((item: any) => {
+    const start = item[0]
+    const end = item[1]
+    const { flyLine, flySpot } = drawLineBetween2Spot(
+      start,
+      end
+    );
+    flyObject3D.add(flyLine);
+    flyObject3D.add(flySpot);
+    flySpotList.push(flySpot);
+  });
+  return { flyObject3D, flySpotList }
 }

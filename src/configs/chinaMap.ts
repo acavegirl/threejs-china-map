@@ -1,3 +1,5 @@
+import { LinearTransfer } from "three";
+
 // 场景配置
 export const sceneConfig = {
   // backgroundColor: "#06092A",
@@ -53,7 +55,7 @@ export const mapConfig = {
   // spotColor: '#69b1ff',
   // ringColor: '#8c8c8c',
   // 圆点color
-  spotColor: 0x10E6DF,
+  spotColor: '#022C43',
   // 圆环颜色
   ringColor: 0x10E6DF,
 
@@ -65,7 +67,15 @@ export const mapConfig = {
     edgeThickness: 16, // 边缘浓度
     edgeStrength: 5, // 边缘的强度，值越高边框范围越大
     pulsePeriod: 0,// 闪烁频率，值越大频率越低
-    visibleEdgeColor: '#bae0ff' // 呼吸显示的颜色
+    visibleEdgeColor: '#bae0ff', // 呼吸显示的颜色
+    hiddenEdgeColor: '#022C43',
+  },
+  // 飞行线
+  fly: {
+    spotColor: 0x10E6DF,
+    lineColor: '#F9F9E0',
+    lineTransparent: true,
+    lineOpacity: 0.3
   }
 };
 
