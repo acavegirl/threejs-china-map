@@ -70,12 +70,14 @@ export const mapConfig = {
     visibleEdgeColor: '#bae0ff', // 呼吸显示的颜色
     hiddenEdgeColor: '#022C43',
   },
+  flyStyle: 'TRAIL', // SPOT | TRAIL
   // 飞行线
   fly: {
-    spotColor: 0x10E6DF,
+    spotColor: '#fff',
     lineColor: '#F9F9E0',
     lineTransparent: true,
-    lineOpacity: 0.3
+    lineOpacity: 0.3,
+    timeDelta: 60,
   }
 };
 

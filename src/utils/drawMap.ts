@@ -435,7 +435,7 @@ export const generateParticlesBG = () => {
  * 线上移动物体
  */
 const drawFlySpot = (curve: any) => {
-  const aGeo = new THREE.SphereGeometry(0.16);
+  const aGeo = new THREE.SphereGeometry(0.3);
   const aMater = new THREE.MeshBasicMaterial({
     color: mapConfig.fly.spotColor,
     side: THREE.DoubleSide,
@@ -470,16 +470,9 @@ const drawLineBetween2Spot = (
 
   const lineGeometry = new THREE.BufferGeometry();
   // 获取曲线上50个点
-  const points = curve.getPoints(50);
+  const points = curve.getPoints(300);
   const positions = [];
-  // const colors = [];
-
-  // const color = new THREE.Color();
-
-  // 给每个顶点设置演示 实现渐变
   for (let j = 0; j < points.length; j++) {
-    // color.setHSL(0.21 + j, 0.5, 0.55 + j * 0.0025); // 色
-    // colors.push(color.r, color.g, color.b);
     positions.push(points[j].x, points[j].y, points[j].z);
   }
   // 放入顶点 和 设置顶点颜色
@@ -487,13 +480,8 @@ const drawLineBetween2Spot = (
     "position",
     new THREE.BufferAttribute(new Float32Array(positions), 3, true)
   );
-  // lineGeometry.setAttribute(
-  //   "color",
-  //   new THREE.BufferAttribute(new Float32Array(colors), 3, true)
-  // );
 
   const material = new THREE.LineBasicMaterial({
-    // vertexColors: true,
     color: mapConfig.fly.lineColor,
     side: THREE.DoubleSide,
     transparent: mapConfig.fly.lineTransparent,
@@ -516,13 +504,83 @@ export const generateFlyLine = (connectLine: [XYCoordType, XYCoordType][]) => {
   connectLine.forEach((item: any) => {
     const start = item[0]
     const end = item[1]
-    const { flyLine, flySpot } = drawLineBetween2Spot(
-      start,
-      end
-    );
-    flyObject3D.add(flyLine);
+    const {flyLine: flyLineBG, curve} = createCurveLine([...start, mapConfig.spotZIndex], [...end, mapConfig.spotZIndex], 50, mapConfig.fly.lineColor, mapConfig.fly.lineOpacity)
+    const flySpot = drawFlySpot(curve);
+
+    flyObject3D.add(flyLineBG);
     flyObject3D.add(flySpot);
     flySpotList.push(flySpot);
   });
   return { flyObject3D, flySpotList }
+}
+
+export const generateFlyLineTrail = (connectLine: [XYCoordType, XYCoordType][]) => {
+  const flyObject3D = new THREE.Object3D();
+  const flySpotList: any = [];
+
+  connectLine.forEach((item: any) => {
+    const start = item[0]
+    const end = item[1]
+
+    const {flyLine} = createCurveLine([...start, mapConfig.spotZIndex], [...end, mapConfig.spotZIndex], 30, mapConfig.fly.spotColor, 1)
+    const {flyLine: flyLineBG} = createCurveLine([...start, mapConfig.spotZIndex], [...end, mapConfig.spotZIndex], 300, mapConfig.fly.lineColor, mapConfig.fly.lineOpacity)
+    flySpotList.push(flyLine)
+
+    flyObject3D.add(flyLineBG);
+    flyObject3D.add(flyLine);
+  });
+  return { flyObject3D, flySpotList }
+}
+
+/**
+ * 创建一条曲线实体
+ * @param start 开始坐标 [x, y, z]
+ * @param end 结束坐标 [x, y, z]
+ * @param pointNum 线上点的数量
+ * @param color 线的颜色
+ * @param opacity 线的透明度
+ * @returns {Line, QuadraticBezierCurve3}
+ */
+const createCurveLine = (start: any, end: any, pointNum: number, color: any, opacity: number) => {
+  const [x0, y0, z0] = [...start];
+  const [x1, y1, z1] = [...end];
+  // 使用 QuadraticBezierCurve3 创建 三维二次贝塞尔曲线
+  const curve = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(x0, -y0, z0),
+    new THREE.Vector3((x0 + x1) / 2, -(y0 + y1) / 2, 20),
+    new THREE.Vector3(x1, -y1, z1)
+  );
+  const points = curve.getPoints(pointNum);
+
+  let colorHigh = new THREE.Color(color)
+  let colors = new Float32Array(points.length * 4)
+  // const positions:any = [];
+  points.forEach((d, i) => {
+    colors[i * 4] = colorHigh.r
+    colors[i * 4 + 1] = colorHigh.g
+    colors[i * 4 + 2] = colorHigh.b
+    colors[i * 4 + 3] = opacity
+    // positions.push(points[i].x, points[i].y, points[i].z);
+  })
+
+  
+  
+  // 创建几何体
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4))
+  // 放入顶点 和 设置顶点颜色
+  // geometry.setAttribute(
+  //   "position",
+  //   new THREE.BufferAttribute(new Float32Array(positions), 3, true)
+  // );
+
+  // 材质
+  const material = new THREE.LineBasicMaterial({
+    vertexColors: true, // 顶点着色
+    transparent: true,
+    side: THREE.DoubleSide
+  })
+
+  const flyLine = new THREE.Line(geometry, material)
+  return { flyLine, curve }
 }

@@ -7,8 +7,8 @@ import { ProjectionFnParamType } from "@/types/chinaMap";
 import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
-import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType } from "@/utils/drawMap";
-import { zoomMap, modelAnime, spotAnime, flyAnime } from "@/utils/anime";
+import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail } from "@/utils/drawMap";
+import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
 import { initRenderPass } from "@/utils/renderPass";
@@ -17,6 +17,7 @@ import { initComposer } from "@/utils/effectComposer";
 import { initAxesHelper, initDirectionalLightHelper } from "@/utils/helper";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { mapConfig } from "@/src/configs/chinaMap";
 
 
 interface Props {
@@ -80,8 +81,27 @@ export default (props: Props) => {
       [label2dData[0].featureCenterCoord, label2dData[4].featureCenterCoord],
       [label2dData[8].featureCenterCoord, label2dData[12].featureCenterCoord]
     ]
-    const { flyObject3D, flySpotList } = generateFlyLine(LineData)
-    mapObject3D.add(flyObject3D);
+    // let flyObject3D: any
+    // let flySpotList: any
+    // switch (mapConfig.flyStyle) {
+    //   case "SPOT":
+    //     flyObject3D = generateFlyLine(LineData).flyObject3D
+    //     flySpotList = generateFlyLine(LineData).flySpotList
+    //     mapObject3D.add(flyObject3D);
+    //     break
+    //   case "TRAIL":
+    //     flyObject3D = generateFlyLineTrail(LineData).flyObject3D
+    //     flySpotList = generateFlyLineTrail(LineData).flySpotList
+    //     mapObject3D.add(flyObject3D);
+    //     break;
+    //   default:
+    //     flyObject3D = generateFlyLineTrail(LineData).flyObject3D
+    //     flySpotList = generateFlyLineTrail(LineData).flySpotList
+    //     mapObject3D.add(flyObject3D);
+    // }
+    const {flyObject3D, flySpotList} = generateFlyLineTrail(LineData)
+    mapObject3D.add(flyObject3D)
+    
 
     /**
      * 粒子背景
@@ -120,7 +140,17 @@ export default (props: Props) => {
     const animate = function () {
       modelAnime(clock, modelMixer)
       spotAnime(spotList)
-      flyAnime(flySpotList)
+      // switch (mapConfig.flyStyle) {
+      //   case "SPOT":
+      //     flyAnime(flySpotList);
+      //     break;
+      //   case "TRAIL":
+      //     flyTrailAnime(flySpotList);
+      //     break;
+      //   default:
+      //     flyTrailAnime(flySpotList);
+      // }
+      flyTrailAnime(flySpotList);
       composer.render();
       requestAnimationFrame(animate);
     };

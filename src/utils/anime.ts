@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import gsap from "gsap";
+import { mapConfig } from "../configs/chinaMap";
 
 /**
  * 动态地图缩放大小
@@ -74,4 +75,33 @@ export const flyAnime = (flySpotList: THREE.Mesh[]) => {
     tankPosition = mesh.curve.getPointAt(mesh._s % 1);
     mesh.position.set(tankPosition.x, tankPosition.y, tankPosition.z);
   });
+}
+
+let timestamp = 0
+let colorIndex = 0
+export const flyTrailAnime = (flyLineList: any) => {
+  let now = Date.now()
+  if (now - timestamp > mapConfig.fly.timeDelta) {
+    timestamp = now
+    colorIndex++
+    if (colorIndex >= flyLineList[0].geometry.getAttribute('color').count) {
+      colorIndex = 0
+    }
+  }
+  flyLineList.forEach((flyLine: any)=> {
+    let color = flyLine.geometry.getAttribute('color')
+    for(let i = 0; i < color.array.length; i += 4) {
+      if ((i / 4) === colorIndex) {
+        color.array[i + 3] = 1
+      } else if ((i / 4) === colorIndex-1) {
+        color.array[i + 3] = 0.7
+      } else if ((i / 4) === colorIndex-2) {
+        color.array[i + 3] = 0.4
+      }else {
+        color.array[i + 3] = 0
+      }
+    }
+
+    flyLine.geometry.attributes.color.needsUpdate = true // 更新颜色
+  })
 }
