@@ -105,3 +105,17 @@ export const flyTrailAnime = (flyLineList: any) => {
     flyLine.geometry.attributes.color.needsUpdate = true // 更新颜色
   })
 }
+
+export const planeAnime = (texture: any) => {
+  if (!texture) return;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  const count = texture.repeat.y;
+  if (count <= 10) {
+    texture.repeat.x += 0.1;
+    texture.repeat.y += 0.2;
+  } else {
+    texture.repeat.x = 0;
+    texture.repeat.y = 0;
+  }
+}

@@ -371,6 +371,27 @@ export const drawPointModel = (glb: GLTF, label2dData: any) => {
   return { modelObject3D, modelMixer}
 }
 
+export const drawPlaneModel = (glb: GLTF) => {
+  const modelObject3D = new THREE.Object3D();
+  const clonedModel = glb.scene.clone();
+  clonedModel.scale.set(0.008, 0.008, 0.008)
+  clonedModel.position.set(0, 0, 0);
+  clonedModel.rotateX((Math.PI / 2))
+  clonedModel.name = 'plane'
+  clonedModel.renderOrder = 1
+
+  clonedModel.traverse((model: any) => {
+    if (model.isMesh) {
+      model.frustumCulled = false;
+      model.castShadow = true;
+    }
+  });
+  const planeTexture = (clonedModel.children[0] as any).material.map;
+
+  modelObject3D.add(clonedModel);
+  return { modelObject3D, planeTexture}
+}
+
 /**
  * 粒子背景
  */
@@ -424,7 +445,7 @@ export const generateParticlesBG = () => {
         }
       `,
     });
-    // 创建点,并加入场景
+    // 创建点
     const particles = new THREE.Points(particlesGeometry, material);
 
     return particles

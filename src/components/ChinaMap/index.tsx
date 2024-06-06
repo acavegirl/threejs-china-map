@@ -7,8 +7,8 @@ import { ProjectionFnParamType } from "@/types/chinaMap";
 import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
-import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail } from "@/utils/drawMap";
-import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime } from "@/utils/anime";
+import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel } from "@/utils/drawMap";
+import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime, planeAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
 import { initRenderPass } from "@/utils/renderPass";
@@ -81,24 +81,6 @@ export default (props: Props) => {
       [label2dData[0].featureCenterCoord, label2dData[4].featureCenterCoord],
       [label2dData[8].featureCenterCoord, label2dData[12].featureCenterCoord]
     ]
-    // let flyObject3D: any
-    // let flySpotList: any
-    // switch (mapConfig.flyStyle) {
-    //   case "SPOT":
-    //     flyObject3D = generateFlyLine(LineData).flyObject3D
-    //     flySpotList = generateFlyLine(LineData).flySpotList
-    //     mapObject3D.add(flyObject3D);
-    //     break
-    //   case "TRAIL":
-    //     flyObject3D = generateFlyLineTrail(LineData).flyObject3D
-    //     flySpotList = generateFlyLineTrail(LineData).flySpotList
-    //     mapObject3D.add(flyObject3D);
-    //     break;
-    //   default:
-    //     flyObject3D = generateFlyLineTrail(LineData).flyObject3D
-    //     flySpotList = generateFlyLineTrail(LineData).flySpotList
-    //     mapObject3D.add(flyObject3D);
-    // }
     const {flyObject3D, flySpotList} = generateFlyLineTrail(LineData)
     mapObject3D.add(flyObject3D)
     
@@ -108,16 +90,26 @@ export default (props: Props) => {
      */
     const particles = generateParticlesBG()
     scene.add(particles)
+    // let planeTexture: any
+    // const glbPromisePlane = getGLBModel("/models/plane.glb")
+    // glbPromisePlane.then(glb => {
+    //   const { modelObject3D, planeTexture: texture} = drawPlaneModel(glb)
+    //   planeTexture = texture
+    //   scene.add(modelObject3D);
+    //   console.log('scene', scene)
+    // })
 
     /**
      * 光源
      */
-    const light0 = initAmbientLight(3)
+    // const light0 = initAmbientLight(3)
     const light1 = initDirectionalLight([0, 40, 6], 3)
-    // const light2 = initDirectionalLight([10, 50, 20], 2)
-    scene.add(light0)
+    const light2 = initDirectionalLight([-30, -80, 6], 10)
+    const light3 = initDirectionalLight([0, 0, 10], 3)
+    // scene.add(light0)
     scene.add(light1)
-    // scene.add(light2)
+    scene.add(light2)
+    scene.add(light3)
 
     /**
      * 通道 & 组合器
@@ -140,17 +132,9 @@ export default (props: Props) => {
     const animate = function () {
       modelAnime(clock, modelMixer)
       spotAnime(spotList)
-      // switch (mapConfig.flyStyle) {
-      //   case "SPOT":
-      //     flyAnime(flySpotList);
-      //     break;
-      //   case "TRAIL":
-      //     flyTrailAnime(flySpotList);
-      //     break;
-      //   default:
-      //     flyTrailAnime(flySpotList);
-      // }
       flyTrailAnime(flySpotList);
+      // planeAnime(planeTexture)
+      renderer.render(scene, camera)
       composer.render();
       requestAnimationFrame(animate);
     };
