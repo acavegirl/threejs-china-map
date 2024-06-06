@@ -401,54 +401,110 @@ export const generateParticlesBG = () => {
   //用32位的浮点数组 创建顶点存储数组 一个顶点坐标由xyz,所以数组长度=粒子数*3
   const positions = new Float32Array(numParticles * 3);
   const scales = new Float32Array(numParticles);
-    // 开始创建坐标点
-    let i = 0,j = 0; 
-    for (let ix = 0; ix < particlesBGConfig.amountX; ix++) {
-      for (let iy = 0; iy < particlesBGConfig.amountY; iy++) {
-        /*
-         *   (SEPARATION 粒子间距，前面声明了，值150) 下面公式化简：
-         *   分别对应（ x y z ）  =  (150x - 3750, 0 , 150y - 3750) ，解释如下
-         *	 y轴不变，x z轴每150间距放置一个顶点，并偏移一半的总间距(3750)，
-         *   使它们沿x z轴对称分布
-         *
-         */
-        positions[i] = ix * particlesBGConfig.separation - ((particlesBGConfig.amountX * particlesBGConfig.separation) / 2); // x点
-        positions[i + 1] = iy * particlesBGConfig.separation - ((particlesBGConfig.amountY * particlesBGConfig.separation) / 2); // y点
-        positions[i + 2] = 0; // z点
-        scales[j] = 1;
-        // 每连续3个值，代表一个顶点
-        i += 3;
-        j++;
-      }
+  // 开始创建坐标点
+  let i = 0,j = 0; 
+  for (let ix = 0; ix < particlesBGConfig.amountX; ix++) {
+    for (let iy = 0; iy < particlesBGConfig.amountY; iy++) {
+      /*
+        *   (SEPARATION 粒子间距，前面声明了，值150) 下面公式化简：
+        *   分别对应（ x y z ）  =  (150x - 3750, 0 , 150y - 3750) ，解释如下
+        *	 y轴不变，x z轴每150间距放置一个顶点，并偏移一半的总间距(3750)，
+        *   使它们沿x z轴对称分布
+        *
+        */
+      positions[i] = ix * particlesBGConfig.separation - ((particlesBGConfig.amountX * particlesBGConfig.separation) / 2); // x点
+      positions[i + 1] = iy * particlesBGConfig.separation - ((particlesBGConfig.amountY * particlesBGConfig.separation) / 2); // y点
+      positions[i + 2] = 0; // z点
+      scales[j] = 1;
+      // 每连续3个值，代表一个顶点
+      i += 3;
+      j++;
     }
-    particlesGeometry.setAttribute('position',new THREE.BufferAttribute(positions, 3))
-    particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        color: {
-          value: new THREE.Color(particlesBGConfig.color)
-        },
+  }
+  particlesGeometry.setAttribute('position',new THREE.BufferAttribute(positions, 3))
+  particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      color: {
+        value: new THREE.Color(particlesBGConfig.color)
       },
-      vertexShader: `
-        attribute float scale;
-        void main() {
-          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-          gl_PointSize = scale * ( 300.0 / - mvPosition.z );
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 color;
-        void main() {
-          if ( length( gl_PointCoord - vec2( 0.5, 0.5 ) ) > 0.475 ) discard;
-          gl_FragColor = vec4( color, 1.0 );
-        }
-      `,
-    });
-    // 创建点
-    const particles = new THREE.Points(particlesGeometry, material);
+    },
+    vertexShader: `
+      attribute float scale;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+        gl_PointSize = scale * ( 300.0 / - mvPosition.z );
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 color;
+      void main() {
+        if ( length( gl_PointCoord - vec2( 0.5, 0.5 ) ) > 0.475 ) discard;
+        gl_FragColor = vec4( color, 1.0 );
+      }
+    `,
+  });
+  // 创建点
+  const particles = new THREE.Points(particlesGeometry, material);
 
-    return particles
+  return particles
+}
+
+export const generateStarBG = () => {
+  const particlesGeometry = new THREE.BufferGeometry()
+  const numParticles = particlesBGConfig.amountX * particlesBGConfig.separation * 4;
+  //用32位的浮点数组 创建顶点存储数组 一个顶点坐标由xyz,所以数组长度=粒子数*3
+  const positions = new Float32Array(numParticles * 3);
+  const scales = new Float32Array(numParticles);
+
+  const n = particlesBGConfig.amountX * particlesBGConfig.separation, n2 = n / 2; // triangles spread in the cube
+  const d = 1,d2 = d / 2; // individual triangle size
+
+  // 开始创建坐标点
+  let i = 0,j = 0; 
+  for (let ix = 0; ix < particlesBGConfig.amountX; ix++) {
+    for (let iy = 0; iy < particlesBGConfig.amountY; iy++) {
+      const x = Math.random() * n - n2;
+      const y = Math.random() * n - n2;
+
+      positions[i] = x + Math.random() * d - d2;
+      positions[i + 1] = y + Math.random() * d - d2;
+      positions[i + 2] = 0; // z点
+      scales[j] = Math.random()*2.1;
+      // 每连续3个值，代表一个顶点
+      i += 3;
+      j++;
+    }
+  }
+  particlesGeometry.setAttribute('position',new THREE.BufferAttribute(positions, 3))
+  particlesGeometry.setAttribute('scale', new THREE.BufferAttribute(scales, 1));
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      color: {
+        value: new THREE.Color(particlesBGConfig.color)
+      },
+    },
+    vertexShader: `
+      attribute float scale;
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+        gl_PointSize = scale * ( 300.0 / - mvPosition.z );
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 color;
+      void main() {
+        if ( length( gl_PointCoord - vec2( 0.5, 0.5 ) ) > 0.475 ) discard;
+        gl_FragColor = vec4( color, 1.0 );
+      }
+    `,
+  });
+  // 创建点
+  const particles = new THREE.Points(particlesGeometry, material);
+
+  return particles
 }
 
 

@@ -7,7 +7,7 @@ import { ProjectionFnParamType } from "@/types/chinaMap";
 import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
-import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel } from "@/utils/drawMap";
+import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel, generateStarBG } from "@/utils/drawMap";
 import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime, planeAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
@@ -73,7 +73,7 @@ export default (props: Props) => {
       modelMixer = modelMixerInstance
       mapObject3D.add(modelObject3D);
     })
-    
+
     /**
      * 绘制飞行线
      */
@@ -83,20 +83,22 @@ export default (props: Props) => {
     ]
     const {flyObject3D, flySpotList} = generateFlyLineTrail(LineData)
     mapObject3D.add(flyObject3D)
-    
 
     /**
      * 粒子背景
      */
-    const particles = generateParticlesBG()
+    // const particles = generateParticlesBG()
+    // scene.add(particles)
+
+    const particles = generateStarBG()
     scene.add(particles)
+
     // let planeTexture: any
     // const glbPromisePlane = getGLBModel("/models/plane.glb")
     // glbPromisePlane.then(glb => {
     //   const { modelObject3D, planeTexture: texture} = drawPlaneModel(glb)
     //   planeTexture = texture
     //   scene.add(modelObject3D);
-    //   console.log('scene', scene)
     // })
 
     /**
@@ -134,7 +136,6 @@ export default (props: Props) => {
       spotAnime(spotList)
       flyTrailAnime(flySpotList);
       // planeAnime(planeTexture)
-      renderer.render(scene, camera)
       composer.render();
       requestAnimationFrame(animate);
     };
@@ -151,9 +152,11 @@ export default (props: Props) => {
     const axesHelper = initAxesHelper()
     scene.add(axesHelper);
     const lightHelper1 = initDirectionalLightHelper(light1)
-    // const lightHelper2 = initDirectionalLightHelper(light2)
+    const lightHelper2 = initDirectionalLightHelper(light2)
+    const lightHelper3 = initDirectionalLightHelper(light3)
     scene.add(lightHelper1);
-    // scene.add(lightHelper2);
+    scene.add(lightHelper2);
+    scene.add(lightHelper3);
 
     /**
      * 视窗resize

@@ -89,5 +89,6 @@ export const particlesBGConfig = {
   amountX: 50,
   // 垂直方向粒子数
   amountY: 50,
-  color: '#76ABAE'
+  color: '#76ABAE',
+  // color: '#F9F9E0'
 }
