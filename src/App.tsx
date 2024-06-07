@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import ChinaMap from "@/components/ChinaMap";
 import { GeoJsonType } from "@/types/geojson";
 import type { ProjectionFnParamType } from "@/types/chinaMap";
+import Turbin from "@/components/Turbin";
 
 export default () => {
   const [geoJson, setGeoJson] = useState<GeoJsonType>();
@@ -45,4 +46,9 @@ export default () => {
       )}
     </>
   );
+  // return (
+  //   <>
+  //     <Turbin />
+  //   </>
+  // )
 }

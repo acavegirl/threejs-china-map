@@ -111,9 +111,9 @@ export const planeAnime = (texture: any) => {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   const count = texture.repeat.y;
-  if (count <= 10) {
-    texture.repeat.x += 0.1;
-    texture.repeat.y += 0.2;
+  if (count <= 8) {
+    texture.repeat.x += 0.01;
+    texture.repeat.y += 0.02;
   } else {
     texture.repeat.x = 0;
     texture.repeat.y = 0;

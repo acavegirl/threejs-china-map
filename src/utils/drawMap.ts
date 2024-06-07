@@ -371,6 +371,51 @@ export const drawPointModel = (glb: GLTF, label2dData: any) => {
   return { modelObject3D, modelMixer}
 }
 
+export const loadModel = (glb: GLTF) => {
+  console.log('glb', glb)
+  // 多个点的model
+  const modelObject3D = new THREE.Object3D();
+  // 多个动画mixer
+  let modelMixer: any = [];
+
+  const clonedModel = glb.scene.clone();
+  
+  const mixer = new THREE.AnimationMixer(clonedModel);
+  const clonedAnimations = glb.animations.map((clip) => {
+    return clip.clone();
+  });
+  clonedAnimations.forEach((clip) => {
+    mixer.clipAction(clip).play();
+  });
+
+  // 添加每个model的mixer
+  modelMixer.push(mixer);
+
+  // 设置模型大小
+  clonedModel.scale.set(0.005, 0.005, 0.005);
+  clonedModel.rotateX(Math.PI / 2);
+  // modelObject3D.add(clonedModel);
+  const shellModel = clonedModel?.getObjectByName(
+    '颜色材质'
+  )
+  const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 3.5)
+  shellModel?.traverse((mesh: any) => {
+    if (!(mesh instanceof THREE.Mesh)) return undefined
+    mesh.material = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      metalness: 1,
+      roughness: 0.7,
+    })
+    // 白色外壳消隐效果
+    mesh.material.clippingPlanes = [clippingPlane]
+    return undefined
+  })
+  clonedModel?.remove(shellModel!)
+  return { modelObject3D: clonedModel, modelMixer}
+}
+
+
+
 export const drawPlaneModel = (glb: GLTF) => {
   const modelObject3D = new THREE.Object3D();
   const clonedModel = glb.scene.clone();
