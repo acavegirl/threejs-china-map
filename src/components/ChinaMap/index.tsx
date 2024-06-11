@@ -8,7 +8,7 @@ import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
 import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel, generateStarBG } from "@/utils/drawMap";
-import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime, planeAnime } from "@/utils/anime";
+import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime, planeAnime, particlesAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
 import { initRenderPass } from "@/utils/renderPass";
@@ -87,11 +87,11 @@ export default (props: Props) => {
     /**
      * 粒子背景
      */
-    // const particles = generateParticlesBG()
-    // scene.add(particles)
-
-    const particles = generateStarBG()
+    const particles = generateParticlesBG()
     scene.add(particles)
+
+    // const particles = generateStarBG()
+    // scene.add(particles)
 
     // let planeTexture: any
     // const glbPromisePlane = getGLBModel("/models/plane.glb")
@@ -136,6 +136,7 @@ export default (props: Props) => {
       spotAnime(spotList)
       flyTrailAnime(flySpotList);
       // planeAnime(planeTexture)
+      particlesAnime(particles);
       composer.render();
       requestAnimationFrame(animate);
     };

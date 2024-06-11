@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import gsap from "gsap";
-import { mapConfig } from "../configs/chinaMap";
+import { mapConfig, particlesBGConfig } from "../configs/chinaMap";
 
 /**
  * 动态地图缩放大小
@@ -118,4 +118,22 @@ export const planeAnime = (texture: any) => {
     texture.repeat.x = 0;
     texture.repeat.y = 0;
   }
+}
+
+let count = 0
+export const particlesAnime = (particles: any) => {
+  const positions = particles.geometry.attributes.position.array;
+  const scales = particles.geometry.attributes.scale.array;
+  let i = 0, j= 0;
+  for (let ix = 0; ix < particlesBGConfig.amountX; ix++) {
+    for (let iy = 0; iy < particlesBGConfig.amountY; iy++) {
+      positions[i + 2] = Math.sin((ix + count) * 0.3) * 1 + Math.sin((iy + count) * 0.5) * 1;
+      scales[j] = (Math.sin((ix + count) * 0.3) + 1) * 0.5 + (Math.sin((iy + count) * 0.5) + 1) * 0.5;
+      i += 3;
+      j++;
+    }
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+  particles.geometry.attributes.scale.needsUpdate = true;
+  count+=0.1
 }

@@ -116,7 +116,7 @@ export function generateMapObject3D(
   });
   mapObject3D.add(borderMapObject3D);
   mapObject3D.add(bgMapObject3D)
-  mapObject3D.position.z = 1
+  mapObject3D.position.z = 2
   return { mapObject3D, label2dData, bgMapObject3D, borderMapObject3D }
 }
 
