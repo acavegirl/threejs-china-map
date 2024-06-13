@@ -7,7 +7,7 @@ import { ProjectionFnParamType } from "@/types/chinaMap";
 import { initScene } from "@/utils/scene";
 import { initCamera } from "@/utils/camera";
 import { initRenderer } from "@/utils/renderer";
-import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel, generateStarBG, loadModel } from "@/utils/drawMap";
+import { generateMapObject3D, generateMapSpot, drawPointModel, generateParticlesBG, generateFlyLine, XYCoordType, generateFlyLineTrail, drawPlaneModel, generateStarBG, loadModel, equipmentDecomposeAnimation } from "@/utils/drawMap";
 import { zoomMap, modelAnime, spotAnime, flyAnime, flyTrailAnime, planeAnime } from "@/utils/anime";
 import { initAmbientLight, initDirectionalLight } from "@/utils/light";
 import { getGLBModel } from "@/utils/getModels";
@@ -37,7 +37,7 @@ export default () => {
     /**
      * 初始化摄像机
      */
-    const camera = initCamera(mapRef.current);
+    const camera = initCamera(mapRef.current, [8, 12, 80]);
 
     /**
      * 初始化渲染器
@@ -54,6 +54,13 @@ export default () => {
       const { modelObject3D, modelMixer: modelMixerInstance} = loadModel(glb)
       modelMixer = modelMixerInstance
       scene.add(modelObject3D);
+    })
+
+    const equipmentGlbPromise = getGLBModel("/models/equipment.glb")
+    equipmentGlbPromise.then(glb => {
+      const { modelObject3D } = loadModel(glb)
+      scene.add(modelObject3D);
+      equipmentDecomposeAnimation(modelObject3D)
     })
 
 
@@ -141,5 +148,6 @@ export default () => {
 
   return (<>
     <canvas ref={mapRef} />
+    {/* <button onClick={()=>}>分解</button> */}
   </>)
 }

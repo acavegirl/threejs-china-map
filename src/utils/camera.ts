@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
-export function initCamera(currentDom: HTMLElement) {
+
+export function initCamera(currentDom: HTMLElement, position: [number, number, number]=[-10, -90, 130]) {
   /**
    * 摄像机
    */
@@ -14,7 +15,11 @@ export function initCamera(currentDom: HTMLElement) {
   // _camera.up.x = 0;
   // _camera.up.y = 0;
   // _camera.up.z = 1; //保证z轴在上面
-  camera.position.set(-10, -90, 130);
+  camera.position.set(...position);
+  camera.up.x = 0;
+  camera.up.y = 0;
+  camera.up.z = 10;
+
 
   return camera;
 }

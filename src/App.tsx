@@ -35,20 +35,20 @@ export default () => {
     setBorderGeoJson(borderData);
   }, []);
 
-  return (
-    <>
-      {geoJson && borderGeoJson && (
-        <ChinaMap
-          borderGeoJson={borderGeoJson}
-          geoJson={geoJson}
-          projectionFnParam={projectionFnParam}
-        />
-      )}
-    </>
-  );
   // return (
   //   <>
-  //     <Turbin />
+  //     {geoJson && borderGeoJson && (
+  //       <ChinaMap
+  //         borderGeoJson={borderGeoJson}
+  //         geoJson={geoJson}
+  //         projectionFnParam={projectionFnParam}
+  //       />
+  //     )}
   //   </>
-  // )
+  // );
+  return (
+    <>
+      <Turbin />
+    </>
+  )
 }

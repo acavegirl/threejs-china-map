@@ -13,6 +13,8 @@ import {
 import type { ProjectionFnParamType } from "@/types/chinaMap"
 import { mapConfig, particlesBGConfig } from '@/configs/chinaMap';
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
+import { MODEL_EQUIPMENT_POSITION_PARAMS_ENUM } from "../configs/const";
+import gsap from "gsap";
 
 export type XYCoordType = [number, number]
 
@@ -414,6 +416,25 @@ export const loadModel = (glb: GLTF) => {
   return { modelObject3D: clonedModel, modelMixer}
 }
 
+export function loadEquipmentModel(glb: GLTF) {
+  console.log('glb', glb)
+
+  const clonedModel = glb.scene.clone();
+  // 设置模型大小
+  clonedModel.scale.set(0.005, 0.005, 0.005);
+  clonedModel.rotateX(Math.PI / 2);
+  
+  return { modelObject3D: clonedModel }
+}
+
+export const equipmentDecomposeAnimation = async (clonedModel: any) => {
+  console.log('clonedModel', clonedModel)
+  clonedModel.updateMatrixWorld()
+  clonedModel.children.forEach((child: THREE.Object3D) => {
+    const params = MODEL_EQUIPMENT_POSITION_PARAMS_ENUM[child.name]
+    gsap.to(child.position, {...params.DECOMPOSE, duration: 1});
+  })
+}
 
 
 export const drawPlaneModel = (glb: GLTF) => {
