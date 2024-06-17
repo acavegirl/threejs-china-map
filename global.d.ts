@@ -8,4 +8,6 @@ declare module '*.less';
 declare module '*.scss';
 declare module '*.sass';
 declare module '*.styl';
+declare module '*.ts';
 declare module 'react-app-rewire-alias';
+declare module 'uuid';

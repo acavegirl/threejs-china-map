@@ -1,3 +1,4 @@
+import { PosV3 } from "@/types/data";
 import * as THREE from "three";
 
 export function initLight() {
@@ -6,7 +7,7 @@ export function initLight() {
   return light;
 }
 
-export function initDirectionalLight(position: number[], intensity: number) {
+export function initDirectionalLight(position: PosV3, intensity: number) {
   const light = new THREE.DirectionalLight(0xffffff, intensity);
   light.position.set(position[0], position[1], position[2]);
   return light;

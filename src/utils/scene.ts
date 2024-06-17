@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { sceneConfig } from '@/src/configs/chinaMap';
+import { sceneConfig } from '@/configs/chinaMap';
 
 /**
  * 初始化场景

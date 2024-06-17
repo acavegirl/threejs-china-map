@@ -17,7 +17,7 @@ import { initComposer } from "@/utils/effectComposer";
 import { initAxesHelper, initDirectionalLightHelper } from "@/utils/helper";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { mapConfig } from "@/src/configs/chinaMap";
+import { mapConfig } from "@/configs/chinaMap";
 
 
 interface Props {
