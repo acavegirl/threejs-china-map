@@ -33,7 +33,7 @@ function getDynamicMapScale(
  */
 export const zoomMap = (mapObject3D: THREE.Object3D, containerRef: HTMLElement) => {
   const mapScale = getDynamicMapScale(mapObject3D, containerRef)
-  gsap.to(mapObject3D.scale, { x: mapScale, y: mapScale, z: 1, duration: 1 });
+  gsap.to(mapObject3D.scale, { x: mapScale-0.2, y: mapScale-0.2, z: 1, duration: 1 });
 }
 
 /**
@@ -42,7 +42,7 @@ export const zoomMap = (mapObject3D: THREE.Object3D, containerRef: HTMLElement) 
  */
 export const spotAnime = (spotList: any) => {
   spotList.forEach((mesh: any) => {
-    mesh._s += 0.01;
+    mesh._s += 0.005;
     mesh.scale.set(1 * mesh._s, 1 * mesh._s, 1 * mesh._s);
     if (mesh._s <= 1.6) {
       mesh.material.opacity = 1.6 - mesh._s;

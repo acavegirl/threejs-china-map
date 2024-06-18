@@ -13,9 +13,6 @@ import {
 import type { ProjectionFnParamType } from "@/types/chinaMap"
 import { mapConfig, particlesBGConfig } from '@/configs/chinaMap';
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
-import { MODEL_EQUIPMENT_POSITION_PARAMS_ENUM } from "../configs/const";
-import gsap from "gsap";
-
 export type XYCoordType = [number, number]
 
 interface Label2dDataType {
@@ -118,7 +115,7 @@ export function generateMapObject3D(
   });
   mapObject3D.add(borderMapObject3D);
   mapObject3D.add(bgMapObject3D)
-  mapObject3D.position.z = 2
+  mapObject3D.position.z = mapConfig.mapZ
   return { mapObject3D, label2dData, bgMapObject3D, borderMapObject3D }
 }
 
@@ -331,110 +328,6 @@ const drawSpot = (coord: [number, number]) => {
     return { circle, ring };
   }
 };
-
-/**
- * model生成的点
- * @param glb 
- * @param label2dData 
- * @returns 
- */
-export const drawPointModel = (glb: GLTF, label2dData: any) => {
-  // 多个点的model
-  const modelObject3D = new THREE.Object3D();
-  // 多个动画mixer
-  let modelMixer: any = [];
-
-  label2dData.forEach((item: any) => {
-    const { featureCenterCoord } = item;
-    const clonedModel = glb.scene.clone();
-    const mixer = new THREE.AnimationMixer(clonedModel);
-    const clonedAnimations = glb.animations.map((clip) => {
-      return clip.clone();
-    });
-    clonedAnimations.forEach((clip) => {
-      mixer.clipAction(clip).play();
-    });
-
-    // 添加每个model的mixer
-    modelMixer.push(mixer);
-
-    // 设置模型位置
-    clonedModel.position.set(
-      featureCenterCoord[0],
-      -featureCenterCoord[1],
-      mapConfig.spotZIndex
-    );
-    // 设置模型大小
-    clonedModel.scale.set(0.2, 0.2, 0.6);
-    // clonedModel.rotateX(-Math.PI / 8);
-    modelObject3D.add(clonedModel);
-  });
-
-  return { modelObject3D, modelMixer}
-}
-
-export const loadModel = (glb: GLTF) => {
-  console.log('glb', glb)
-  // 多个点的model
-  const modelObject3D = new THREE.Object3D();
-  // 多个动画mixer
-  let modelMixer: any = [];
-
-  const clonedModel = glb.scene.clone();
-  
-  const mixer = new THREE.AnimationMixer(clonedModel);
-  const clonedAnimations = glb.animations.map((clip) => {
-    return clip.clone();
-  });
-  clonedAnimations.forEach((clip) => {
-    mixer.clipAction(clip).play();
-  });
-
-  // 添加每个model的mixer
-  modelMixer.push(mixer);
-
-  // 设置模型大小
-  clonedModel.scale.set(0.005, 0.005, 0.005);
-  clonedModel.rotateX(Math.PI / 2);
-  // modelObject3D.add(clonedModel);
-  const shellModel = clonedModel?.getObjectByName(
-    '颜色材质'
-  )
-  const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 3.5)
-  shellModel?.traverse((mesh: any) => {
-    if (!(mesh instanceof THREE.Mesh)) return undefined
-    mesh.material = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      metalness: 1,
-      roughness: 0.7,
-    })
-    // 白色外壳消隐效果
-    mesh.material.clippingPlanes = [clippingPlane]
-    return undefined
-  })
-  clonedModel?.remove(shellModel!)
-  return { modelObject3D: clonedModel, modelMixer}
-}
-
-export function loadEquipmentModel(glb: GLTF) {
-  console.log('glb', glb)
-
-  const clonedModel = glb.scene.clone();
-  // 设置模型大小
-  clonedModel.scale.set(0.005, 0.005, 0.005);
-  clonedModel.rotateX(Math.PI / 2);
-  
-  return { modelObject3D: clonedModel }
-}
-
-export const equipmentDecomposeAnimation = async (clonedModel: any) => {
-  console.log('clonedModel', clonedModel)
-  clonedModel.updateMatrixWorld()
-  clonedModel.children.forEach((child: THREE.Object3D) => {
-    const params = MODEL_EQUIPMENT_POSITION_PARAMS_ENUM[child.name]
-    gsap.to(child.position, {...params.DECOMPOSE, duration: 1});
-  })
-}
 
 
 export const drawPlaneModel = (glb: GLTF) => {

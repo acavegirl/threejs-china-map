@@ -48,7 +48,8 @@ export default () => {
   // );
   return (
     <>
-      <Turbin />
+      {/* <Turbin /> */}
+      <ChinaMap />
     </>
   )
 }

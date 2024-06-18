@@ -7,8 +7,9 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { PosV3 } from '@/types/data'
 
-export default () => {
+export default (cameraPos: PosV3) => {
   const container = useRef()
   const scene = useRef<THREE.Scene>()
   const camera = useRef<THREE.PerspectiveCamera>()
@@ -17,6 +18,7 @@ export default () => {
   const renderPass = useRef<RenderPass>()
   const composer = useRef<EffectComposer>()
   const control = useRef<OrbitControls>()
+  const axesHelper = useRef<THREE.AxesHelper>()
 
   // 模型动画
   const modelMixers: any = []
@@ -34,8 +36,9 @@ export default () => {
       CSSRenderer: CSSRenderer.current,
       renderPass: renderPass.current,
       composer: composer.current,
-      control: control.current
-    } = new ThreeBase(container.current))
+      control: control.current,
+      axesHelper: axesHelper.current,
+    } = new ThreeBase(container.current, cameraPos))
   }, [container.current])
 
 
@@ -82,6 +85,7 @@ export default () => {
     container,
     scene,
     camera,
+    axesHelper,
     renderer,
     CSSRenderer,
     renderPass,

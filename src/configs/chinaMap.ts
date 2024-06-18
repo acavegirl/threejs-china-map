@@ -10,7 +10,9 @@ export const sceneConfig = {
 const BGDepth = 0.2;
 const BorderDepth = 1.8;
 const Depth = BGDepth + BorderDepth;
+const MapZ = 2 
 export const mapConfig = {
+  mapZ: MapZ,
   bg: {
     mapDepth: BGDepth,
     mapTransparent: false,
@@ -48,9 +50,9 @@ export const mapConfig = {
   mapTransparent: false,
   mapOpacity: 0.9,
   // label 2d高度
-  label2dZIndex: Depth + 2,
+  label2dZIndex: MapZ + Depth + 2,
   // spot
-  spotZIndex: BorderDepth + 1,
+  spotZIndex: MapZ + BorderDepth + 1,
 
   // spotColor: '#69b1ff',
   // ringColor: '#8c8c8c',

@@ -30,7 +30,7 @@ export function useTurbine() {
     loadAnimate,
     renderMixins,
     render,
-  } = useThree()
+  } = useThree([8, 12, 80])
 
   const onResizeEventRef = useRef<any>()
   const clickEventRef = useRef<any>()
@@ -81,9 +81,6 @@ export function useTurbine() {
     clonedModel.rotateX(Math.PI / 2);
     clonedModel.name = 'equipment'
     modelEquipment.current = clonedModel
-    
-
-    
     turbine.add(clonedModel)
   }
 

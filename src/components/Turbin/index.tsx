@@ -3,7 +3,6 @@ import useTurbine from "./hooks/useTurbin"
 export default () => {
   const {
     container,
-    loading,
     equipmentComposeAnimation,
     equipmentDecomposeAnimation,
   } = useTurbine()
