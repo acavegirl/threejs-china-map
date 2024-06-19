@@ -11,8 +11,13 @@ import { ProjectionFnParamType } from '@/types/chinaMap'
 import { GeoJsonType } from '@/types/geojson'
 import axios from 'axios'
 import { mapConfig } from '@/configs/chinaMap'
+import { size } from 'lodash'
+import { useLayerStore } from "@/store/layer";
 
 export function useChinaMap() {
+  const { setLayerInfo } = useLayerStore((state) => ({
+    setLayerInfo: state.setLayerInfo
+  }))
   const {
     container,
     scene,
@@ -30,6 +35,7 @@ export function useChinaMap() {
 
   const mapObject3DRef = useRef<any>(new THREE.Object3D())
   const label2dDataRef = useRef<any>()
+  const modelObject3DRef = useRef<any>(new THREE.Group())
 
   const [loading, setLoading] = useState(false)
 
@@ -120,7 +126,7 @@ export function useChinaMap() {
   const loadPointModel = async () => {
     const { scene: sceneModel, animations } = await loadGLTF("/models/cone.glb")
     // 多个点的model
-    const modelObject3D = new THREE.Object3D();
+    // const modelObject3D = new THREE.Object3D();
 
     label2dDataRef.current.forEach((item: any) => {
       const { featureCenterCoord } = item;
@@ -136,9 +142,52 @@ export function useChinaMap() {
       // 设置模型大小
       clonedModel.scale.set(0.2, 0.2, 0.6);
       // clonedModel.rotateX(-Math.PI / 8);
-      modelObject3D.add(clonedModel);
+      // 在模型上挂载数据
+      clonedModel.userData = {id: `${clonedModel.position.x}_${clonedModel.position.y}`}
+      modelObject3DRef.current.add(clonedModel);
+      
     });
-    mapObject3DRef.current.add(modelObject3D);
+    mapObject3DRef.current.add(modelObject3DRef.current);
+  }
+
+  // 坐标点点击事件
+  const onModelClick = () => {
+    // const equipmentList: any = []
+    // modelEquipment.current?.traverse((mesh) => {
+    //   if (!(mesh instanceof THREE.Mesh)) return undefined
+    //   const { material } = mesh
+    //   mesh.material = material.clone()
+    //   equipmentList.push(mesh)
+    //   return undefined
+    // })
+    const handler = (event: MouseEvent) => {
+      if (!container.current) return;
+      const el = container.current as HTMLElement
+      const mouse = new THREE.Vector2(
+        (event.clientX / el.offsetWidth) * 2 - 1,
+        -(event.clientY / el.offsetHeight) * 2 + 1
+      )
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(mouse, camera.current!)
+      const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
+      if (size(intersects) <= 0) return undefined
+      const pointModel = <any>intersects[0].object
+      console.log('pointModel', pointModel.parent.userData)
+      setLayerInfo({
+        id: pointModel.parent.userData.id,
+        type: 'device',
+      })
+      // if (!equipment) return undefined
+      // equipmentList.forEach((child: any) => {
+      //   child.material.emissive.setHex(child.currentHex)
+      // })
+      // equipment.currentHex =
+      //   equipment.currentHex ?? equipment.material.emissive.getHex()
+      // equipment.material.emissive.setHex(0xff0000)
+      // return undefined
+    }
+    document.addEventListener('dblclick', handler)
+    clickEventRef.current = handler
   }
 
   /**
@@ -180,6 +229,7 @@ export function useChinaMap() {
     ]).then(()=> {
       scene.current?.add(mapObject3DRef.current)
       zoomMap(mapObject3DRef.current, (container.current as unknown as HTMLElement));
+      onModelClick()
       render()
     })
 
@@ -202,7 +252,7 @@ export function useChinaMap() {
     return () => {
       if (onResizeEventRef.current) {
         window.removeEventListener("resize", onResizeEventRef.current);
-        document.removeEventListener('click', clickEventRef.current)
+        document.removeEventListener('dblclick', clickEventRef.current)
       }
     };
   }, [geoJson, borderGeoJson])

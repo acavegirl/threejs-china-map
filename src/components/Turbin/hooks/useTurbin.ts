@@ -161,8 +161,6 @@ export function useTurbine() {
     })
   }
 
-  
-
   // 风机设备点击事件
   const onEquipmentClick = () => {
     const equipmentList: any = []
