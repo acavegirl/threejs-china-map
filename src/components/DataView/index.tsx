@@ -1,10 +1,13 @@
 import {BorderBox1, BorderBox2, ActiveRingChart, BorderBox8, ScrollBoard, BorderBox13, BorderBox10, BorderBox12, BorderBox9, BorderBox6} from '@jiaminghi/data-view-react';
 import Charts from '@jiaminghi/charts';
-import { LegacyRef, useEffect, useRef } from 'react';
+import { LegacyRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { nextTick } from 'process';
 
 export default () => {
   const container = useRef();
   const container2 = useRef();
+  const onResizeEventRef = useRef<any>();
+  const [updateTrigger, setUpdateTrigger] = useState(0)
   // const container = document.getElementById('container')
   useEffect(() => {
     if (!container.current || !container2.current) return ;
@@ -36,7 +39,19 @@ export default () => {
 
     
     myChart.setOption(option1)
-    myChart2.setOption(option2)
+    myChart2.setOption(option1)
+
+    const onResizeEvent = () => {
+      setUpdateTrigger((old)=>old+1)
+    };
+    onResizeEventRef.current = onResizeEvent
+    window.addEventListener("resize", onResizeEvent);
+
+    return () => {
+      if (onResizeEventRef.current) {
+        window.removeEventListener("resize", onResizeEventRef.current);
+      }
+    };
   }, [container.current, container2.current])
 
   const option2 = {
@@ -86,7 +101,7 @@ export default () => {
           <div ref={(container as unknown as LegacyRef<HTMLDivElement>)} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}}></div>
         </BorderBox1>
         <BorderBox2 style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}}>
-          <ActiveRingChart config={option2} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}} />
+          <ActiveRingChart key={updateTrigger} config={option2} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}} />
         </BorderBox2>
         <BorderBox8 style={{width: 'calc(100vw / 5 - 20px) ', height: 'calc(100vh / 3 - 20px)', padding: '10px'}}>
           <ScrollBoard config={option3} style={{width: 'calc(100vw / 5 - 20px) ', height: 'calc(100vh / 3 - 20px)'}} />
@@ -98,7 +113,7 @@ export default () => {
           <div ref={(container2 as unknown as LegacyRef<HTMLDivElement>)} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}}></div>
         </BorderBox13>
         <BorderBox9 style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}}>
-          <ActiveRingChart config={option2} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}} />
+          <ActiveRingChart key={updateTrigger} config={option2} style={{width: 'calc(100vw / 5)', height: 'calc(100vh / 3)'}} />
         </BorderBox9>
         <BorderBox12 style={{width: 'calc(100vw / 5 - 20px) ', height: 'calc(100vh / 3 - 20px)', padding: '10px'}}>
           <ScrollBoard config={option3} style={{width: 'calc(100vw / 5 - 20px) ', height: 'calc(100vh / 3 - 20px)'}} />

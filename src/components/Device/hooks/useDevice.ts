@@ -95,10 +95,6 @@ export function useDevice() {
       const device = <any>intersects[0].object
       if (!device) return undefined
       console.log('device', device.parent.parent.userData)
-      // setLayerInfo({
-      //   id: device.parent.parent.userData,
-      //   type: 'device',
-      // })
       return undefined
     }
     document.addEventListener('dblclick', handler)
@@ -110,9 +106,9 @@ export function useDevice() {
   }
 
   useEffect(() => {
+    loadBG()
     loadLights()
     loadModels([
-      loadBG(),
       loadDevice(),
     ]).then(()=> {
       // 当全部模型加载时完毕触发

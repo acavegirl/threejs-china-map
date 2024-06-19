@@ -103,8 +103,8 @@ export function useFactory() {
 
   useEffect(() => {
     loadLights()
+    loadBG()
     loadModels([
-      loadBG(),
       loadFactory(),
     ]).then(()=> {
       // 当全部模型加载时完毕触发

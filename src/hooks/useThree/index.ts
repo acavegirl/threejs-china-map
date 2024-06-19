@@ -69,6 +69,12 @@ export default (cameraPos: PosV3) => {
     return undefined
   }
 
+  const renderOnce = () => {
+    composer.current && (composer.current as EffectComposer).render();
+    renderMixins.forEach((mixin) => mixin())
+    CSSRenderer.current && scene.current && camera.current && (CSSRenderer.current as CSS2DRenderer).render(scene.current, camera.current)
+  }
+
   const render = () => {
     const mixerUpdateDelta = clock.getDelta()
     modelMixers.forEach((mixer: any) => mixer.update(mixerUpdateDelta))
@@ -97,5 +103,6 @@ export default (cameraPos: PosV3) => {
     render,
     loadGLTF,
     loadAnimate,
+    renderOnce
   }
 }

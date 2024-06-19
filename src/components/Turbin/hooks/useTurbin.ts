@@ -203,12 +203,12 @@ export function useTurbine() {
   }
 
   useEffect(() => {
+    loadLights()
+    loadBG()
     loadModels([
       loadTurbineSkeleton(),
       loadTurbineEquipments(),
     ]).then(()=> {
-      loadLights()
-      loadBG()
       scene.current?.add(turbine)
       // 当全部模型加载时完毕触发
       onEquipmentClick()

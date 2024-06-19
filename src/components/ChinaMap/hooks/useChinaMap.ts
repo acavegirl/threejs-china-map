@@ -28,6 +28,7 @@ export function useChinaMap() {
     loadAnimate,
     renderMixins,
     render,
+    renderOnce
   } = useThree([-5, -90, 100])
 
   const onResizeEventRef = useRef<any>()
@@ -203,8 +204,8 @@ export function useChinaMap() {
   useEffect(() => {
     if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current) return;
     scene.current?.add(axesHelper.current)
-    loadLights()
     loadBG()
+    loadLights()
     loadMap()
     loadSpots()
     loadFlyLine()
@@ -228,6 +229,7 @@ export function useChinaMap() {
       renderer.current.setSize(canvas.clientWidth, canvas.clientHeight, false);
       // 设置渲染器的像素比例
       renderer.current.setPixelRatio(window.devicePixelRatio);
+      
     };
     onResizeEvent()
     onResizeEventRef.current = onResizeEvent
