@@ -3,6 +3,9 @@ import ChinaMap from "@/components/ChinaMap";
 import Turbin from "@/components/Turbin";
 import DataView from "@/components/DataView";
 import { useLayerStore } from "@/store/layer";
+import Factory from "@/components/Factory";
+import Device from "@/components/Device";
+import { ReturnFactory, ReturnMap } from "@/components/ReturnBtn"
 
 export default () => {
   const { layerId, layerType } = useLayerStore((state) => ({
@@ -21,8 +24,22 @@ export default () => {
         )
       }
       {
+        layerType == 'factory' && (
+          <>
+            <Factory />
+            <DataView />
+            <ReturnMap />
+          </>
+        )
+      }
+      {
         layerType == 'device' && (
-          <Turbin />
+          <>
+            <Device />
+            <DataView />
+            <ReturnMap />
+            <ReturnFactory />
+          </>
         )
       }
     </>

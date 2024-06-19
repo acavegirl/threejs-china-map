@@ -330,9 +330,9 @@ const drawSpot = (coord: [number, number]) => {
 };
 
 
-export const drawPlaneModel = (glb: GLTF) => {
+export const drawPlaneModel = (clonedModel: any) => {
   const modelObject3D = new THREE.Object3D();
-  const clonedModel = glb.scene.clone();
+  // const clonedModel = glb.scene.clone();
   clonedModel.scale.set(0.008, 0.008, 0.008)
   clonedModel.position.set(0, 0, 0);
   clonedModel.rotateX((Math.PI / 2))

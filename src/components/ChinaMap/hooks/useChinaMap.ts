@@ -152,14 +152,6 @@ export function useChinaMap() {
 
   // 坐标点点击事件
   const onModelClick = () => {
-    // const equipmentList: any = []
-    // modelEquipment.current?.traverse((mesh) => {
-    //   if (!(mesh instanceof THREE.Mesh)) return undefined
-    //   const { material } = mesh
-    //   mesh.material = material.clone()
-    //   equipmentList.push(mesh)
-    //   return undefined
-    // })
     const handler = (event: MouseEvent) => {
       if (!container.current) return;
       const el = container.current as HTMLElement
@@ -175,16 +167,8 @@ export function useChinaMap() {
       console.log('pointModel', pointModel.parent.userData)
       setLayerInfo({
         id: pointModel.parent.userData.id,
-        type: 'device',
+        type: 'factory',
       })
-      // if (!equipment) return undefined
-      // equipmentList.forEach((child: any) => {
-      //   child.material.emissive.setHex(child.currentHex)
-      // })
-      // equipment.currentHex =
-      //   equipment.currentHex ?? equipment.material.emissive.getHex()
-      // equipment.material.emissive.setHex(0xff0000)
-      // return undefined
     }
     document.addEventListener('dblclick', handler)
     clickEventRef.current = handler
