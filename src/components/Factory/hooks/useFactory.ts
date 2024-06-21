@@ -16,7 +16,7 @@ export function useFactory() {
   const { setLayerInfo } = useLayerStore((state) => ({
     setLayerInfo: state.setLayerInfo
   }))
-  const factoryModelRef = useRef(new THREE.Object3D())
+  const factoryModelRef = useRef<any>()
 
   const {
     container,
@@ -25,13 +25,16 @@ export function useFactory() {
     renderer,
     control,
     loadGLTF,
-    loadAnimate,
     renderMixins,
     render,
+    addBoxHelper,
+    setBoxHelperObj,
+    setBoxHelperVisibility,
   } = useThree([0, -90, 10])
 
   const onResizeEventRef = useRef<any>()
   const clickEventRef = useRef<any>()
+  const mouseMoveEventRef = useRef<any>()
 
   // 加载灯光
   const loadLights = () => {
@@ -44,8 +47,8 @@ export function useFactory() {
     lightData.map((data: [PosV3, number]) => {
       const light = initDirectionalLight(...data)
       scene.current?.add(light)
-      const lightHelper = initDirectionalLightHelper(light)
-      scene.current?.add(lightHelper);
+      // const lightHelper = initDirectionalLightHelper(light)
+      // scene.current?.add(lightHelper);
     })
   }
 
@@ -60,15 +63,22 @@ export function useFactory() {
   }
 
   const loadFactory = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/factory.glb")
+    const { scene: clonedModel } = await loadGLTF("/models/datacenter.glb")
     // 设置模型大小
-    clonedModel.scale.set(0.06, 0.06, 0.06);
+    clonedModel.scale.set(2.5, 2.5, 2.5);
     clonedModel.rotateX(Math.PI / 2);
+    clonedModel.rotateY(Math.PI*1.5);
     clonedModel.name = 'factory'
     // 在模型上挂载数据
     clonedModel.userData = {id: `factory`}
-    factoryModelRef.current = clonedModel
-    scene.current?.add(factoryModelRef.current)
+    const rackList: any[] = [];
+    clonedModel.traverse(item => {
+      if (item.name.includes('rack')) {
+        rackList.push(item);
+      }
+    });
+    factoryModelRef.current = rackList
+    scene.current?.add(clonedModel)
   }
 
   // 点击事件
@@ -82,7 +92,7 @@ export function useFactory() {
       )
       const raycaster = new THREE.Raycaster()
       raycaster.setFromCamera(mouse, camera.current!)
-      const intersects = raycaster.intersectObject(factoryModelRef.current, true)
+      const intersects = raycaster.intersectObjects(factoryModelRef.current, true)
       if (size(intersects) <= 0) return undefined
       const factory = <any>intersects[0].object
       if (!factory) return undefined
@@ -93,8 +103,43 @@ export function useFactory() {
       })
       return undefined
     }
+    const mouseMoveHandler = (event: MouseEvent) => {
+      if (!container.current) return;
+      const el = container.current as HTMLElement
+      const mouse = new THREE.Vector2(
+        (event.clientX / el.offsetWidth) * 2 - 1,
+        -(event.clientY / el.offsetHeight) * 2 + 1
+      )
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(mouse, camera.current!)
+      const intersects = raycaster.intersectObjects(factoryModelRef.current, true)
+      if (size(intersects) <= 0) {
+        setBoxHelperVisibility(false)
+        return
+      }
+      const factory = <any>intersects[0].object
+      if (!factory) {
+        setBoxHelperVisibility(false)
+        return 
+      }
+      const getParentModel: any = (obj: THREE.Object3D)=> {
+        if (obj.name.includes('rack')) {
+          return obj
+        }
+        if (obj.parent) {
+          return getParentModel(obj.parent)
+        }
+        return new THREE.Object3D()
+      }
+      const parentModel = getParentModel(factory)
+      console.log(parentModel, 'parent')
+      setBoxHelperObj(parentModel as THREE.Object3D)
+      return undefined
+    }
     document.addEventListener('dblclick', handler)
+    document.addEventListener('mousemove', mouseMoveHandler)
     clickEventRef.current = handler
+    mouseMoveEventRef.current = mouseMoveHandler
   }
 
   const loadModels = async (tasks: Promise<any>[]) => {
@@ -107,6 +152,7 @@ export function useFactory() {
     loadModels([
       loadFactory(),
     ]).then(()=> {
+      addBoxHelper()
       // 当全部模型加载时完毕触发
       onFactoryClick()
       render()
@@ -132,6 +178,7 @@ export function useFactory() {
       if (onResizeEventRef.current) {
         window.removeEventListener("resize", onResizeEventRef.current);
         document.removeEventListener('dblclick', clickEventRef.current)
+        document.removeEventListener('mousemove', mouseMoveEventRef.current)
       }
     };
   }, [])

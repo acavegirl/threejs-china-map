@@ -45,8 +45,8 @@ export function useTurbine() {
     lightData.map((data: [PosV3, number]) => {
       const light = initDirectionalLight(...data)
       scene.current?.add(light)
-      const lightHelper = initDirectionalLightHelper(light)
-      scene.current?.add(lightHelper);
+      // const lightHelper = initDirectionalLightHelper(light)
+      // scene.current?.add(lightHelper);
     })
   }
 
@@ -154,7 +154,6 @@ export function useTurbine() {
 
   // 设备合成动画
   const equipmentComposeAnimation = () => {
-    // groundAndSkeletonShowAnimation()
     modelEquipment.current?.children.forEach((child: THREE.Object3D) => {
       const params = MODEL_EQUIPMENT_POSITION_PARAMS_ENUM[child.name]
       gsap.to(child.position, {...params.COMPOSE, duration: 1});

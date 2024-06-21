@@ -28,8 +28,8 @@ export function useChinaMap() {
     loadAnimate,
     renderMixins,
     render,
-    renderOnce
-  } = useThree([-5, -90, 100])
+    control,
+  } = useThree([5, -60, 100])
 
   const onResizeEventRef = useRef<any>()
   const clickEventRef = useRef<any>()
@@ -81,8 +81,8 @@ export function useChinaMap() {
     lightData.map((data: [PosV3, number]) => {
       const light = initDirectionalLight(...data)
       scene.current?.add(light)
-      const lightHelper = initDirectionalLightHelper(light)
-      scene.current?.add(lightHelper);
+      // const lightHelper = initDirectionalLightHelper(light)
+      // scene.current?.add(lightHelper);
     })
   }
 
@@ -202,8 +202,9 @@ export function useChinaMap() {
   }
 
   useEffect(() => {
-    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current) return;
-    scene.current?.add(axesHelper.current)
+    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current || !control.current) return;
+    // scene.current?.add(axesHelper.current)
+    control.current?.target.setX(10)
     loadBG()
     loadLights()
     loadMap()
@@ -213,6 +214,7 @@ export function useChinaMap() {
       loadPointModel(),
     ]).then(()=> {
       scene.current?.add(mapObject3DRef.current)
+      control.current?.update()
       zoomMap(mapObject3DRef.current, (container.current as unknown as HTMLElement));
       onModelClick()
       render()

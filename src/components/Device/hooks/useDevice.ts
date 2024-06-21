@@ -22,7 +22,6 @@ export function useDevice() {
     scene,
     camera,
     renderer,
-    control,
     loadGLTF,
     renderMixins,
     render,
@@ -44,8 +43,8 @@ export function useDevice() {
     lightData.map((data: [PosV3, number]) => {
       const light = initDirectionalLight(...data)
       scene.current?.add(light)
-      const lightHelper = initDirectionalLightHelper(light)
-      scene.current?.add(lightHelper);
+      // const lightHelper = initDirectionalLightHelper(light)
+      // scene.current?.add(lightHelper);
     })
   }
 

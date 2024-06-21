@@ -3,6 +3,7 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
+  font-size: 12px;
 }
 #root {
   height: inherit;
@@ -13,4 +14,27 @@ canvas {
   display: block;
   height: inherit;
   width: inherit;
+}
+
+.custom-button {
+  background: radial-gradient(ellipse, rgba(30, 59, 112, 0.05), rgba(30, 59, 112, 0.5)); /* 渐变透明背景 */
+  color: #ffffff; /* 白色文字 */
+  border: 2px solid rgba(0, 255, 255, 0.1); /* 边框颜色与图片一致 */
+  /* width */
+  /* padding: 8px 20px; */
+  text-align: center;
+  position: absolute;
+  width: 100px;
+  height: 40px;
+  /* margin: 10px 0;
+  font-size: 16px; */
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  /* box-shadow: 0 0 15px rgba(0, 255, 255, 0.6); 发光效果 */
+}
+
+.custom-button:hover {
+  /* background: linear-gradient(to bottom, rgba(42, 77, 143, 0.8), rgba(42, 77, 143, 0.5)); 浅蓝色渐变背景 */
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); /* 更强的发光效果 */
 }

@@ -82,4 +82,12 @@ export const ReturnMap = () => {
   )
 }
 
-export default { ReturnFactory, ReturnMap }
+export function CustomBtn({style, onClick, text}: any) {
+  return (
+    <>
+      <button className="custom-button" style={style} onClick={onClick}>{text}</button>
+    </>
+  )
+}
+
+export default { ReturnFactory, ReturnMap, CustomBtn }

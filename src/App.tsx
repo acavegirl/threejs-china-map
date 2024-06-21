@@ -5,12 +5,14 @@ import DataView from "@/components/DataView";
 import { useLayerStore } from "@/store/layer";
 import Factory from "@/components/Factory";
 import Device from "@/components/Device";
-import { ReturnFactory, ReturnMap } from "@/components/ReturnBtn"
+import { ReturnFactory, ReturnMap, CustomBtn } from "@/components/ReturnBtn"
+import SelectionTool from "./components/SelectionTool";
 
 export default () => {
-  const { layerId, layerType } = useLayerStore((state) => ({
+  const { layerId, layerType, setLayerInfo } = useLayerStore((state) => ({
     layerId: state.id,
-    layerType: state.type
+    layerType: state.type,
+    setLayerInfo: state.setLayerInfo,
   }))
 
   return (
@@ -19,7 +21,6 @@ export default () => {
         layerType == 'map' && (
           <>
             <ChinaMap />
-            <DataView />
           </>
         )
       }
@@ -27,8 +28,6 @@ export default () => {
         layerType == 'factory' && (
           <>
             <Factory />
-            <DataView />
-            <ReturnMap />
           </>
         )
       }
@@ -36,12 +35,11 @@ export default () => {
         layerType == 'device' && (
           <>
             <Device />
-            <DataView />
-            <ReturnMap />
-            <ReturnFactory />
           </>
         )
       }
+      <DataView />
+      <SelectionTool />
     </>
   )
 }

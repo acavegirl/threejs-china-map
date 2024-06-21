@@ -19,6 +19,7 @@ export default (cameraPos: PosV3) => {
   const composer = useRef<EffectComposer>()
   const control = useRef<OrbitControls>()
   const axesHelper = useRef<THREE.AxesHelper>()
+  const boxHelper = useRef<THREE.BoxHelper>()
 
   // 模型动画
   const modelMixers: any = []
@@ -38,6 +39,7 @@ export default (cameraPos: PosV3) => {
       composer: composer.current,
       control: control.current,
       axesHelper: axesHelper.current,
+      boxHelper: boxHelper.current,
     } = new ThreeBase(container.current, cameraPos))
   }, [container.current])
 
@@ -87,6 +89,17 @@ export default (cameraPos: PosV3) => {
     requestAnimationFrame(() => render())
   }
 
+  const addBoxHelper = () => {
+    (scene.current as THREE.Scene).add((boxHelper.current as THREE.BoxHelper))
+  }
+  const setBoxHelperVisibility = (visibility: boolean) => {
+    (boxHelper.current as THREE.Object3D).visible = visibility;
+  }
+  const setBoxHelperObj = (obj: THREE.Object3D)=> {
+    (boxHelper.current as THREE.BoxHelper).setFromObject(obj);
+    setBoxHelperVisibility(true);
+  }
+
   return {
     container,
     scene,
@@ -103,6 +116,9 @@ export default (cameraPos: PosV3) => {
     render,
     loadGLTF,
     loadAnimate,
-    renderOnce
+    renderOnce,
+    addBoxHelper,
+    setBoxHelperObj,
+    setBoxHelperVisibility,
   }
 }

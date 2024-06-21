@@ -5,7 +5,7 @@ import { initCSSRender, initRenderer } from '@/utils/renderer';
 import { initComposer } from '@/utils/effectComposer';
 import { initRenderPass } from '@/utils/renderPass';
 import { PosV3 } from '@/types/data';
-import { initAxesHelper } from '@/utils/helper';
+import { initAxesHelper, initBoxHelper } from '@/utils/helper';
 
 class ThreeBase {
   scene;
@@ -16,6 +16,7 @@ class ThreeBase {
   composer;
   control;
   axesHelper;
+  boxHelper;
 
   constructor(el: HTMLElement, cameraPos: PosV3){
     this.scene = initScene();
@@ -28,7 +29,7 @@ class ThreeBase {
     this.renderPass = initRenderPass(this.scene, this.camera)
     this.composer = initComposer(this.renderer)
     this.composer.addPass(this.renderPass);
-    
+    this.boxHelper = initBoxHelper();
   }
 }
 export default ThreeBase

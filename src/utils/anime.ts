@@ -19,10 +19,12 @@ function getDynamicMapScale(
   // 获取包围盒的尺寸
   const size = new THREE.Vector3();
   boundingBox.getSize(size);
+  console.log(size)
   // 新增 Math.random避免缩放为1，没有动画效果
   const scale =
-    Math.round(Math.sqrt(refArea / (size.x * size.y * 400))) +
+    Math.round(Math.sqrt(refArea / (size.x * size.y * 500))) +
     parseFloat((Math.random() + 0.5).toFixed(2));
+  console.log(scale)
   return scale;
 }
 
@@ -33,7 +35,7 @@ function getDynamicMapScale(
  */
 export const zoomMap = (mapObject3D: THREE.Object3D, containerRef: HTMLElement) => {
   const mapScale = getDynamicMapScale(mapObject3D, containerRef)
-  gsap.to(mapObject3D.scale, { x: mapScale-0.2, y: mapScale-0.2, z: 1, duration: 1 });
+  gsap.to(mapObject3D.scale, { x: mapScale-0.3, y: mapScale-0.3, z: 1, duration: 1 });
 }
 
 /**

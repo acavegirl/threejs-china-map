@@ -17,3 +17,8 @@ export function initDirectionalLightHelper(light: THREE.DirectionalLight) {
   const lightHelper = new THREE.DirectionalLightHelper(light);
   return lightHelper
 }
+
+export function initBoxHelper(color=0x00ffff) {
+  const boxHelper = new THREE.BoxHelper(new THREE.Object3D(), new THREE.Color(color));
+  return boxHelper
+}
