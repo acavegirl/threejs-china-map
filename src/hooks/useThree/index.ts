@@ -48,7 +48,7 @@ export default (cameraPos: PosV3) => {
   const loadGLTF = (url: string): Promise<GLTF> => {
     const loader = new GLTFLoader();
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath("/draco/");
+    dracoLoader.setDecoderPath(`${process.env.PUBLIC_URL}/draco/`);
     loader.setDRACOLoader(dracoLoader);
     const onCompleted = (object: GLTF, resolve: any) => resolve(object)
     return new Promise<GLTF>((resolve) => {

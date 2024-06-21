@@ -49,7 +49,7 @@ export function useDevice() {
   }
 
   const loadBG = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/plane.glb")
+    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/plane.glb`)
     const { modelObject3D, planeTexture} = drawPlaneModel(clonedModel)
     scene.current?.add(modelObject3D)
     const uid = uuid()
@@ -59,7 +59,7 @@ export function useDevice() {
   }
 
   const loadDevice = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/device.glb")
+    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/device.glb`)
     // 设置模型大小
     clonedModel.scale.set(30, 30, 30);
     clonedModel.rotateX(Math.PI / 2);

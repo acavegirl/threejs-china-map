@@ -62,7 +62,7 @@ export function useTurbine() {
 
   // 加载风机骨架
   const loadTurbineSkeleton = async () => {
-    const { scene: clonedModel, animations } = await loadGLTF("/models/turbine.glb")
+    const { scene: clonedModel, animations } = await loadGLTF(`${process.env.PUBLIC_URL}/models/turbine.glb`)
 
     // 设置模型大小
     clonedModel.scale.set(0.005, 0.005, 0.005);
@@ -75,7 +75,7 @@ export function useTurbine() {
   }
   // 加载风机设备
   const loadTurbineEquipments = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/equipment.glb")
+    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/equipment.glb`)
     // 设置模型大小
     clonedModel.scale.set(0.005, 0.005, 0.005);
     clonedModel.rotateX(Math.PI / 2);

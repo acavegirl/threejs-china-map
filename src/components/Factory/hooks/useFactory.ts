@@ -53,7 +53,7 @@ export function useFactory() {
   }
 
   const loadBG = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/plane.glb")
+    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/plane.glb`)
     const { modelObject3D, planeTexture} = drawPlaneModel(clonedModel)
     scene.current?.add(modelObject3D)
     const uid = uuid()
@@ -63,7 +63,7 @@ export function useFactory() {
   }
 
   const loadFactory = async () => {
-    const { scene: clonedModel } = await loadGLTF("/models/datacenter.glb")
+    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/datacenter.glb`)
     // 设置模型大小
     clonedModel.scale.set(2.5, 2.5, 2.5);
     clonedModel.rotateX(Math.PI / 2);

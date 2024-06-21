@@ -13,6 +13,8 @@ import axios from 'axios'
 import { mapConfig } from '@/configs/chinaMap'
 import { size } from 'lodash'
 import { useLayerStore } from "@/store/layer";
+import ChinaGeoJson from '@/assets/json/ChinaGeo.json';
+import ChinaBorderGeoJson from '@/assets/json/ChinaBorderGeo.json';
 
 export function useChinaMap() {
   const { setLayerInfo } = useLayerStore((state) => ({
@@ -50,24 +52,35 @@ export function useChinaMap() {
       scale: 30,
     });
 
-  useEffect(() => {
-    queryMapData(mapAdCode); // 默认的中国adcode码
-  }, [mapAdCode]);
+  // useEffect(() => {
+  //   queryMapData(mapAdCode); // 默认的中国adcode码
+  // }, [mapAdCode]);
 
   // 请求地图数据
-  const queryMapData = useCallback(async (code: number) => {
-    const response = await axios.get(
-      `https://geo.datav.aliyun.com/areas_v3/bound/${code}_full.json`
-    );
-    const { data } = response;
+  // const queryMapData = useCallback(async (code: number) => {
+  //   const response = await axios.get(
+      // `https://geo.datav.aliyun.com/areas_v3/bound/${code}_full.json`
+  //   );
+  //   const { data } = response;
 
-    const borderResponse = await axios.get(
-      `https://geo.datav.aliyun.com/areas_v3/bound/100000.json`
-    );
-    const { data: borderData } = borderResponse;
+  //   const borderResponse = await axios.get(
+      // `https://geo.datav.aliyun.com/areas_v3/bound/100000.json`
+  //   const { data: borderData } = borderResponse;
+  //   setGeoJson(data);
+  //   setBorderGeoJson(borderData);
+  // }, []);
+  
+  const setMapData = () => {
+    const data = Object(ChinaGeoJson);
+    const borderData = Object(ChinaBorderGeoJson);
     setGeoJson(data);
     setBorderGeoJson(borderData);
-  }, []);
+  }
+
+  useEffect(()=>{
+    setMapData()
+  }, [])
+
 
   /**
    * 加载灯光
@@ -125,7 +138,7 @@ export function useChinaMap() {
    * 加载点模型
    */
   const loadPointModel = async () => {
-    const { scene: sceneModel, animations } = await loadGLTF("/models/cone.glb")
+    const { scene: sceneModel, animations } = await loadGLTF(`${process.env.PUBLIC_URL}/models/cone.glb`)
     // 多个点的model
     // const modelObject3D = new THREE.Object3D();
 
