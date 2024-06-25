@@ -119,6 +119,7 @@ export function useChinaMap() {
   const loadMap = () => {
     const { mapObject3D, label2dData} = generateMapObject3D((geoJson as GeoJsonType), (borderGeoJson as GeoJsonType), projectionFnParam);
     label2dDataRef.current = label2dData;
+    // console.log('label2dData', label2dData)
     mapObject3DRef.current.add(mapObject3D);
   }
 
@@ -178,7 +179,7 @@ export function useChinaMap() {
       const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
       if (size(intersects) <= 0) return undefined
       const pointModel = <any>intersects[0].object
-      console.log('pointModel', pointModel.parent.userData)
+      // console.log('pointModel', pointModel.parent.userData)
       setLayerInfo({
         id: pointModel.parent.userData.id,
         type: 'factory',
@@ -222,7 +223,7 @@ export function useChinaMap() {
     loadLights()
     loadMap()
     loadSpots()
-    loadFlyLine()
+    // loadFlyLine()
     loadModels([
       loadPointModel(),
     ]).then(()=> {

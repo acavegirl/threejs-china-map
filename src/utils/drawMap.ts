@@ -33,7 +33,7 @@ export function generateMapObject3D(
 ){
   // 地图对象
   const mapObject3D = new THREE.Object3D();
-  const label2dData: Label2dDataType[] = []; // 存储自定义 2d 标签数据
+  // const label2dData: Label2dDataType[] = []; // 存储自定义 2d 标签数据
 
   // 地图中心和缩放比例
   const { center, scale } = projectionFnParam;
@@ -50,6 +50,19 @@ export function generateMapObject3D(
   // 地图数据
   const { features: basicFeatures } = geojsonData;
 
+  const pointData: Label2dDataType[] = [{
+    featureCenterCoord: [121.4737, 31.2304],
+    featureName: '上海',
+  }, {
+    featureCenterCoord: [120.5832, 31.2983],
+    featureName: '苏州',
+  }]
+  const label2dData = pointData.map(item => ({
+    featureCenterCoord: projectionFn(item.featureCenterCoord),
+    featureName: item.featureName,
+  }))
+
+
     // 每个省的数据
   basicFeatures.forEach((basicFeatureItem: GeoJsonFeature) => {
     // 每个省份的地图对象
@@ -63,18 +76,18 @@ export function generateMapObject3D(
     const featureCoords: GeometryCoordinates<GeometryType> =
       basicFeatureItem.geometry.coordinates;
     // 每个中心点位置
-    const featureCenterCoord: any =
-      basicFeatureItem.properties.centroid &&
-      projectionFn(basicFeatureItem.properties.centroid);
+    // const featureCenterCoord: any =
+    //   basicFeatureItem.properties.centroid &&
+    //   projectionFn(basicFeatureItem.properties.centroid);
     // 名字
-    const featureName: string = basicFeatureItem.properties.name;
+    // const featureName: string = basicFeatureItem.properties.name;
 
-    if (featureCenterCoord) {
-      label2dData.push({
-        featureCenterCoord,
-        featureName,
-      });
-    }
+    // if (featureCenterCoord) {
+    //   label2dData.push({
+    //     featureCenterCoord,
+    //     featureName,
+    //   });
+    // }
 
     // MultiPolygon 类型
     if (featureType === "MultiPolygon") {
