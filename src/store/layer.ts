@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface LayerInfo {
+export interface LayerInfo {
   id: string;
   type: string;
 }
@@ -11,11 +11,14 @@ interface LayerState {
   setLayerInfo: (info: LayerInfo) => void
 }
 
-export const useLayerStore = create<LayerState>()((set) => ({
-  id: 'map',
-  type: 'map',
-  setLayerInfo: (info) => set(() => ({
-    id: info.id,
-    type: info.type
-  })),
-}))
+export const useLayerStore = create<LayerState>()((set) =>({
+    id: 'map',
+    type: 'map',
+    setLayerInfo: (info) => {
+      return set(() => ({
+        id: info.id,
+        type: info.type
+      })
+    )},
+  })
+)

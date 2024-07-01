@@ -9026,6 +9026,11 @@ postcss@^8.3.5, postcss@^8.4.23, postcss@^8.4.33, postcss@^8.4.4:
     picocolors "^1.0.0"
     source-map-js "^1.2.0"
 
+postprocessing@^6.35.5:
+  version "6.35.5"
+  resolved "https://registry.npmmirror.com/postprocessing/-/postprocessing-6.35.5.tgz#2bcc3eb3460b96225a044e13ce3888409f57b5e3"
+  integrity sha512-nO8pxbiQT7+u3qv/q4LL1x6tstZWuduDlkOLFWQm3vFFKHzAsRMxqwsGAktkHKMSGXVEwTBvT3TKPklNALQheg==
+
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmmirror.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"

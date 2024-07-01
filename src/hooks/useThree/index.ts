@@ -8,6 +8,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { PosV3 } from '@/types/data'
+import { useLoadingStore } from "@/store/loading";
 
 export default (cameraPos: PosV3) => {
   const container = useRef()
@@ -27,6 +28,10 @@ export default (cameraPos: PosV3) => {
   // 动画
   const renderMixins = new Map()
 
+  const { setLoading } = useLoadingStore((state) => ({
+    setLoading: state.setLoading,
+  }))
+
   useEffect(() => {
     if (!container.current) return;
 
@@ -34,7 +39,7 @@ export default (cameraPos: PosV3) => {
       scene: scene.current,
       camera: camera.current,
       renderer: renderer.current,
-      CSSRenderer: CSSRenderer.current,
+      // CSSRenderer: CSSRenderer.current,
       renderPass: renderPass.current,
       composer: composer.current,
       control: control.current,
@@ -75,6 +80,16 @@ export default (cameraPos: PosV3) => {
     composer.current && (composer.current as EffectComposer).render();
     renderMixins.forEach((mixin) => mixin())
     CSSRenderer.current && scene.current && camera.current && (CSSRenderer.current as CSS2DRenderer).render(scene.current, camera.current)
+  }
+
+  /**
+   * 异步加载模型
+   * @param tasks
+   */
+  const loadModels = async (tasks: Promise<any>[]) => {
+    setLoading(true)
+    await Promise.all(tasks)
+    setLoading(false)
   }
 
   const render = () => {
@@ -120,5 +135,6 @@ export default (cameraPos: PosV3) => {
     addBoxHelper,
     setBoxHelperObj,
     setBoxHelperVisibility,
+    loadModels,
   }
 }

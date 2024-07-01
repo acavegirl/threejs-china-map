@@ -1,25 +1,22 @@
 import * as THREE from 'three'
-import { useThree } from '@/hooks'
+import { useThree, usePageChange } from '@/hooks'
 import { initDirectionalLight } from '@/utils/light'
 import { LightData, PosV3 } from '@/types/data'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { XYCoordType, generateFlyLineTrail, generateMapObject3D, generateMapSpot, generateParticlesBG } from '@/utils/drawMap'
-import { initDirectionalLightHelper } from '@/utils/helper'
 import { flyTrailAnime, particlesAnime, spotAnime, zoomMap } from '@/utils/anime'
 import { ProjectionFnParamType } from '@/types/chinaMap'
 import { GeoJsonType } from '@/types/geojson'
-import axios from 'axios'
 import { mapConfig } from '@/configs/chinaMap'
 import { size } from 'lodash'
-import { useLayerStore } from "@/store/layer";
 import ChinaGeoJson from '@/assets/json/ChinaGeo.json';
 import ChinaBorderGeoJson from '@/assets/json/ChinaBorderGeo.json';
 
 export function useChinaMap() {
-  const { setLayerInfo } = useLayerStore((state) => ({
-    setLayerInfo: state.setLayerInfo
-  }))
+
+  const setPageChange = usePageChange()
+
   const {
     container,
     scene,
@@ -31,6 +28,7 @@ export function useChinaMap() {
     renderMixins,
     render,
     control,
+    loadModels,
   } = useThree([5, -60, 100])
 
   const onResizeEventRef = useRef<any>()
@@ -39,8 +37,6 @@ export function useChinaMap() {
   const mapObject3DRef = useRef<any>(new THREE.Object3D())
   const label2dDataRef = useRef<any>()
   const modelObject3DRef = useRef<any>(new THREE.Group())
-
-  const [loading, setLoading] = useState(false)
 
   const [geoJson, setGeoJson] = useState<GeoJsonType>();
   const [borderGeoJson, setBorderGeoJson] = useState<GeoJsonType>();
@@ -180,7 +176,12 @@ export function useChinaMap() {
       if (size(intersects) <= 0) return undefined
       const pointModel = <any>intersects[0].object
       // console.log('pointModel', pointModel.parent.userData)
-      setLayerInfo({
+      // setLayerInfo({
+      //   id: pointModel.parent.userData.id,
+      //   type: 'factory',
+      // })
+      // setLoading(true)
+      setPageChange({
         id: pointModel.parent.userData.id,
         type: 'factory',
       })
@@ -203,16 +204,6 @@ export function useChinaMap() {
     renderMixins.set(uid, () => {
       flyTrailAnime(flySpotList)
     })
-  }
-  
-  /**
-   * 异步加载模型
-   * @param tasks
-   */
-  const loadModels = async (tasks: Promise<any>[]) => {
-    setLoading(true)
-    await Promise.all(tasks)
-    setLoading(false)
   }
 
   useEffect(() => {

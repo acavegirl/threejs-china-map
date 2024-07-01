@@ -1,14 +1,13 @@
 import { useLayerStore } from "@/store/layer";
 import { CustomBtn } from "@/components/ReturnBtn"
+import { usePageChange } from "@/hooks";
 
 export default () => {
-  const { setLayerInfo } = useLayerStore((state) => ({
-    setLayerInfo: state.setLayerInfo,
-  }))
+  const setPageChange = usePageChange()
   return (
     <>
       <CustomBtn style={{position: 'absolute', top: '100px', left: 'calc(100vw / 4)'}} text="平台1" onClick={()=>{
-        setLayerInfo({
+        setPageChange({
           id: 'map',
           type: 'map',
         })

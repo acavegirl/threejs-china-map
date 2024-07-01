@@ -1,21 +1,15 @@
 import * as THREE from 'three'
-import { useThree } from '@/hooks'
+import { useThree, usePageChange } from '@/hooks'
 import { initAmbientLight, initDirectionalLight } from '@/utils/light'
 import { LightData, PosV3 } from '@/types/data'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { v4 as uuid } from 'uuid'
-import { MODEL_EQUIPMENT_POSITION_PARAMS_ENUM } from '@/configs/const'
 import { size } from 'lodash'
-import gsap from "gsap";
 import { drawPlaneModel, generateParticlesBG } from '@/utils/drawMap'
-import { initDirectionalLightHelper } from '@/utils/helper'
-import { particlesAnime, planeAnime } from '@/utils/anime'
-import { useLayerStore } from "@/store/layer";
+import { planeAnime } from '@/utils/anime'
 
 export function useFactory() {
-  const { setLayerInfo } = useLayerStore((state) => ({
-    setLayerInfo: state.setLayerInfo
-  }))
+  const setPageChange = usePageChange()
   const factoryModelRef = useRef<any>()
 
   const {
@@ -30,6 +24,7 @@ export function useFactory() {
     addBoxHelper,
     setBoxHelperObj,
     setBoxHelperVisibility,
+    loadModels,
   } = useThree([0, -90, 10])
 
   const onResizeEventRef = useRef<any>()
@@ -96,8 +91,7 @@ export function useFactory() {
       if (size(intersects) <= 0) return undefined
       const factory = <any>intersects[0].object
       if (!factory) return undefined
-      console.log('factory', factory.parent.parent.userData)
-      setLayerInfo({
+      setPageChange({
         id: factory.parent.parent.userData,
         type: 'device',
       })
@@ -142,16 +136,12 @@ export function useFactory() {
     mouseMoveEventRef.current = mouseMoveHandler
   }
 
-  const loadModels = async (tasks: Promise<any>[]) => {
-    await Promise.all(tasks)
-  }
-
   useEffect(() => {
-    loadLights()
-    loadBG()
     loadModels([
+      loadBG(),
       loadFactory(),
     ]).then(()=> {
+      loadLights()
       addBoxHelper()
       // 当全部模型加载时完毕触发
       onFactoryClick()

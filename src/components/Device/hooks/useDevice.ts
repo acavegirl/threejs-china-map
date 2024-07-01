@@ -1,20 +1,13 @@
 import * as THREE from 'three'
-import { useThree } from '@/hooks'
+import { useThree, usePageChange } from '@/hooks'
 import { initAmbientLight, initDirectionalLight } from '@/utils/light'
 import { LightData, PosV3 } from '@/types/data'
 import { useEffect, useRef } from 'react'
-import { v4 as uuid } from 'uuid'
 import { size } from 'lodash'
-import gsap from "gsap";
-import { drawPlaneModel } from '@/utils/drawMap'
-import { initDirectionalLightHelper } from '@/utils/helper'
-import { planeAnime } from '@/utils/anime'
-import { useLayerStore } from "@/store/layer";
+import { Reflector } from 'three/examples/jsm/objects/Reflector';
+// import MeshReflectorMaterial from '@/assets/js/MeshReflectorMaterial.js';
 
 export function useDevice() {
-  const { setLayerInfo } = useLayerStore((state) => ({
-    setLayerInfo: state.setLayerInfo
-  }))
   const deviceModelRef = useRef(new THREE.Object3D())
 
   const {
@@ -25,6 +18,7 @@ export function useDevice() {
     loadGLTF,
     renderMixins,
     render,
+    loadModels,
   } = useThree([0, -90, 50])
 
   const onResizeEventRef = useRef<any>()
@@ -49,13 +43,52 @@ export function useDevice() {
   }
 
   const loadBG = async () => {
-    const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/plane.glb`)
-    const { modelObject3D, planeTexture} = drawPlaneModel(clonedModel)
-    scene.current?.add(modelObject3D)
-    const uid = uuid()
-    renderMixins.set(uid, () => {
-      planeAnime(planeTexture)
-    })
+    // const { scene: clonedModel } = await loadGLTF(`${process.env.PUBLIC_URL}/models/plane.glb`)
+    // const { modelObject3D, planeTexture} = drawPlaneModel(clonedModel)
+    // scene.current?.add(modelObject3D)
+    // const uid = uuid()
+    // renderMixins.set(uid, () => {
+    //   planeAnime(planeTexture)
+    // })
+
+    let options = {
+      clipBias: 0.03, // 鏡射多遠的距離
+      textureWidth: 1024, // 鏡射材質圖解析度
+      textureHeight: 1024, // 鏡射材質圖解析度
+      color: 0x889999, // 反射光的濾鏡
+      recursion: 0 // 反射可以反彈幾次
+    };
+    const geometry = new THREE.PlaneGeometry(100, 100, 1, 1)
+    // 放到Reflector參數中。
+    let mirror = new Reflector(geometry, options)
+    scene.current?.add(mirror);
+
+    // let fadingReflectorOptions = {
+    //   mixBlur: 2,
+    //   mixStrength: 1.5,
+    //   resolution: 2048, // 材質圖的解析度
+    //   blur: [0, 0], // 高斯模糊的材質解析度為何
+    //   minDepthThreshold: 0.7,// 從多遠的地方開始淡出
+    //   maxDepthThreshold: 2, // 到多遠的地方會淡出到沒畫面
+    //   depthScale: 2,
+    //   depthToBlurRatioBias: 2,
+    //   mirror: 0,
+    //   distortion: 2,
+    //   mixContrast: 2,
+    //   reflectorOffset: 0, // 鏡面跟物理中間是否要留一段距離才開始反射
+    //   bufferSamples: 8,
+    // }
+    // // 透過geometry以及material來建立Mesh物件
+    // const geometry = new THREE.PlaneGeometry(100, 100, 1, 1)
+    // const material = new THREE.MeshBasicMaterial()
+    // const mesh = new THREE.Mesh(geometry, (material as any))
+    // // 將材質置換成MeshReflectorMaterial
+    // mesh.material = new MeshReflectorMaterial(renderer, camera, scene, mesh, (fadingReflectorOptions as any));
+    // scene.current?.add(mesh);
+    // const uid = uuid()
+    // renderMixins.set(uid, () => {
+    //   (mesh.material as any).update()
+    // })
   }
 
   const loadDevice = async () => {
@@ -100,17 +133,14 @@ export function useDevice() {
     clickEventRef.current = handler
   }
 
-  const loadModels = async (tasks: Promise<any>[]) => {
-    await Promise.all(tasks)
-  }
 
   useEffect(() => {
-    loadBG()
-    loadLights()
     loadModels([
       loadDevice(),
     ]).then(()=> {
       // 当全部模型加载时完毕触发
+      loadBG()
+      loadLights()
       onDeviceClick()
       render()
     })

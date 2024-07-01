@@ -10,6 +10,11 @@ html, body {
   width: inherit;
 }
 
+.canvas-container {
+  height: inherit;
+  width: inherit;
+}
+
 canvas {
   display: block;
   height: inherit;

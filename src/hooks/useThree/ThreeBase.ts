@@ -11,7 +11,7 @@ class ThreeBase {
   scene;
   camera;
   renderer;
-  CSSRenderer;
+  // CSSRenderer;
   renderPass;
   composer;
   control;
@@ -22,7 +22,7 @@ class ThreeBase {
     this.scene = initScene();
     this.camera = initCamera(el, cameraPos);
     this.renderer = initRenderer(el);
-    this.CSSRenderer = initCSSRender(el);
+    // this.CSSRenderer = initCSSRender(el);
     this.control = new OrbitControls(this.camera, el);
     // 垂直旋转限制
     this.control.maxPolarAngle = Math.PI;
