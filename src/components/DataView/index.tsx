@@ -14,25 +14,40 @@ import { column2PosStyle, dataViewItemHeightStyle, dataViewItemSMHeightStyle, da
 import KeyInfo from './KeyInfo';
 import Production from './Production';
 import Alarm from './Alarm';
+import { useDOMStore } from '@/store/dom';
 
 export default () => {
+  const leftRef = useRef(null);
+  const rightRef = useRef(null);
+  const right2Ref = useRef(null);
+
+  const setRef = useDOMStore((state) => state.setRef);
+
+  useEffect(() => {
+    if (!leftRef.current || !rightRef.current || !right2Ref.current || !setRef) return
+    setRef({
+      leftRef,
+      rightRef,
+      right2Ref,
+    });
+  }, [leftRef.current, rightRef.current, right2Ref.current, setRef]);
 
   return (
     <>
-      <div style={{position: 'absolute', top: '0', }}>
+      <div style={{position: 'absolute', top: '0', }} ref={leftRef}>
         <PlatformStatus style={{...dataViewItemWidthStyle, ...dataViewItemHeightStyle}} />
         <Realtime style={{...dataViewItemWidthStyle, ...dataViewItemHeightStyle}} />
         <KeyInfo style={{...dataViewItemWidthStyle, ...dataViewItemHeightStyle}} />
         <Network style={{...dataViewItemWidthStyle, ...dataViewItemHeightStyle}} />
         
       </div>
-      <div style={{position: 'absolute', top: '0', right: '0'}}>
+      <div style={{position: 'absolute', top: '0', right: '0'}} ref={rightRef}>
         <Capability style={{...dataViewItemSMWidthStyle, ...dataViewItemHeightStyle}} type="small" />
         <TaskFinish style={{...dataViewItemSMWidthStyle, ...dataViewItemHeightStyle}} type="small" />
         <Alarm style={{...dataViewItemSMWidthStyle, ...dataViewItemHeightStyle}} type="small" />
         <Enhance style={{...dataViewItemSMWidthStyle, ...dataViewItemHeightStyle}} type="small" />
       </div>
-      <div style={{position: 'absolute', ...column2PosStyle}}>
+      <div style={{position: 'absolute', ...column2PosStyle}} ref={right2Ref}>
         <RunStatus style={{...dataViewItemSMWidthStyle, ...dataViewItemSMHeightStyle}} type="small2" />
         <Production style={{...dataViewItemSMWidthStyle, ...dataViewItemSMHeightStyle}} type="small2" />
         <TaskStatus style={{...dataViewItemSMWidthStyle, ...dataViewItemSMHeightStyle}} type="small2" />

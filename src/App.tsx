@@ -32,8 +32,8 @@ export default () => {
           layerType == 'map' && (
             <>
               <ChinaMap />
-              <DataView />
-              <SelectionTool />
+              {/* <DataView />
+              <SelectionTool /> */}
             </>
           )
         }
@@ -41,8 +41,8 @@ export default () => {
           layerType == 'factory' && (
             <>
               <Factory />
-              <DataView />
-              <SelectionTool />
+              {/* <DataView />
+              <SelectionTool /> */}
             </>
           )
         }
@@ -50,11 +50,13 @@ export default () => {
           layerType == 'device' && (
             <>
               <Device />
-              <DataView />
-              <SelectionTool />
+              {/* <DataView />
+              <SelectionTool /> */}
             </>
           )
         }
+        <DataView />
+        <SelectionTool />
       </div>
     </div>
   )

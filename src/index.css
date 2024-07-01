@@ -4,15 +4,18 @@ html, body {
   height: 100%;
   width: 100%;
   font-size: 12px;
+  overflow: hidden;
 }
 #root {
   height: inherit;
   width: inherit;
+  overflow: hidden;
 }
 
 .canvas-container {
   height: inherit;
   width: inherit;
+  overflow: hidden;
 }
 
 canvas {

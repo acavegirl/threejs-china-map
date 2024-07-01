@@ -1,11 +1,13 @@
-const widthCount = 5
-const widthCountSM = widthCount+0.5
-const heightCount = 4
-const heightCountSM = heightCount+0.5
-const dataConPadding = 10
+export const widthCount = 5
+export const widthCountSM = widthCount+0.5
+export const heightCount = 4
+export const heightCountSM = heightCount+0.5
+export const dataConPadding = 10
+
+export const dataViewItemWidth = `calc(100vw / ${widthCount} - ${dataConPadding*2}px)`
 
 export const dataViewItemWidthStyle = {
-  width: `calc(100vw / ${widthCount} - ${dataConPadding*2}px)`
+  width: dataViewItemWidth
 }
 
 export const dataViewItemSMWidthStyle = {
