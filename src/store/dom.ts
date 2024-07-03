@@ -16,3 +16,14 @@ export const useDOMStore = create<RefState>()((set) => ({
   right2Ref: null,
   setRef: (refs: RefsInfo) => set(refs),
 }))
+
+interface PopRefState {
+  popDOMRef: any;
+  setRef: (ref: any) => void
+}
+export const usePopDOMStore = create<PopRefState>()((set) => ({
+  popDOMRef: null,
+  setRef: (ref) => set(()=>({
+    popDOMRef: ref
+  }))
+}))

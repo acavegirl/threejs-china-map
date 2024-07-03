@@ -1,4 +1,4 @@
-import { useDOMStore } from "@/store/dom";
+import { useDOMStore, usePopDOMStore } from "@/store/dom";
 import { LayerInfo, useLayerStore } from "@/store/layer";
 import { useLoadingStore } from "@/store/loading";
 import gsap from "gsap";
@@ -18,12 +18,17 @@ export default () => {
     right2Ref: state.right2Ref,
   }));
 
+  const { popDOMRef } = usePopDOMStore((state) => ({
+    popDOMRef: state.popDOMRef,
+  }));
+
   const setPageChange = (info: LayerInfo) => {
     setLoading(true)
     setLayerInfo(info)
 
-    if (leftRef.current) {
+    if (leftRef.current && popDOMRef.current) {
       let tl = gsap.timeline()
+      tl.to(popDOMRef.current, {opacity: 0}, 0.1)
       const len = leftRef.current.getBoundingClientRect().right + 1
       const len2 = window.innerWidth - right2Ref.current.getBoundingClientRect().left + 1
       tl.to(leftRef.current, {x: `-=${len}`, duration: 1})

@@ -12,10 +12,19 @@ import { mapConfig } from '@/configs/chinaMap'
 import { size } from 'lodash'
 import ChinaGeoJson from '@/assets/json/ChinaGeo.json';
 import ChinaBorderGeoJson from '@/assets/json/ChinaBorderGeo.json';
+import { usePopDOMStore } from '@/store/dom';
+import { usePopoverStore } from '@/store/popover';
+import gsap from "gsap";
 
 export function useChinaMap() {
 
   const setPageChange = usePageChange()
+  const { popDOMRef } = usePopDOMStore((state) => ({
+    popDOMRef: state.popDOMRef,
+  }));
+  const { setPopoverData } = usePopoverStore((state) => ({
+    setPopoverData: state.setPopoverData,
+  }));
 
   const {
     container,
@@ -32,6 +41,7 @@ export function useChinaMap() {
   } = useThree([5, -60, 100])
 
   const onResizeEventRef = useRef<any>()
+  const dbclickEventRef = useRef<any>()
   const clickEventRef = useRef<any>()
 
   const mapObject3DRef = useRef<any>(new THREE.Object3D())
@@ -163,7 +173,9 @@ export function useChinaMap() {
 
   // 坐标点点击事件
   const onModelClick = () => {
+    let timer: any = null
     const handler = (event: MouseEvent) => {
+      clearTimeout(timer)
       if (!container.current) return;
       const el = container.current as HTMLElement
       const mouse = new THREE.Vector2(
@@ -175,19 +187,62 @@ export function useChinaMap() {
       const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
       if (size(intersects) <= 0) return undefined
       const pointModel = <any>intersects[0].object
-      // console.log('pointModel', pointModel.parent.userData)
-      // setLayerInfo({
-      //   id: pointModel.parent.userData.id,
-      //   type: 'factory',
-      // })
-      // setLoading(true)
       setPageChange({
         id: pointModel.parent.userData.id,
         type: 'factory',
       })
     }
+
+    const modelList: any = []
+    modelObject3DRef.current?.traverse((mesh: any) => {
+      if (!(mesh instanceof THREE.Mesh)) return undefined
+      const { material } = mesh
+      mesh.material = material.clone()
+      modelList.push(mesh)
+      return undefined
+    })
+    const clickHandler = (event: MouseEvent) => {
+      clearTimeout(timer)
+      timer = setTimeout(function () {
+        if (!container.current) return;
+        const el = container.current as HTMLElement
+        const mouse = new THREE.Vector2(
+          (event.clientX / el.offsetWidth) * 2 - 1,
+          -(event.clientY / el.offsetHeight) * 2 + 1
+        )
+        const raycaster = new THREE.Raycaster()
+        raycaster.setFromCamera(mouse, camera.current!)
+        const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
+        if (size(intersects) <= 0) return undefined
+        const pointModel = <any>intersects[0].object
+        if (!pointModel) return undefined
+        modelList.forEach((child: any) => {
+          child.material.emissive.setHex(child.currentHex)
+        })
+        pointModel.material.currentHex =
+        pointModel.material.currentHex ?? pointModel.material.emissive.getHex()
+        pointModel.material.emissive.setHex(0xff0000)
+
+        let tl = gsap.timeline()
+        // 把当前popover隐藏
+        if (popDOMRef.current?.style.opacity == 0) {
+          tl.to(popDOMRef.current, {opacity: 0, left: `${event.clientX + 10}px`, top: `${event.clientY + 10}px`}, 0.1)
+        } else {
+          tl.to(popDOMRef.current, {opacity: 0}, 0.2)
+        }
+        // 更改popover数据
+        setPopoverData({
+          name: pointModel.parent.userData.id,
+          data: pointModel.parent.userData.id
+        })
+        // 显示popover在新的位置
+        tl.to(popDOMRef.current, {opacity: 1, left: `${event.clientX + 10}px`, top: `${event.clientY + 10}px`}, 0.2)
+      }, 500)
+    }
     document.addEventListener('dblclick', handler)
-    clickEventRef.current = handler
+    document.addEventListener('click', clickHandler)
+    dbclickEventRef.current = handler
+    clickEventRef.current = clickHandler
   }
 
   /**
@@ -207,7 +262,7 @@ export function useChinaMap() {
   }
 
   useEffect(() => {
-    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current || !control.current) return;
+    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current || !control.current || !popDOMRef.current) return;
     // scene.current?.add(axesHelper.current)
     control.current?.target.setX(10)
     loadBG()
@@ -245,7 +300,8 @@ export function useChinaMap() {
     return () => {
       if (onResizeEventRef.current) {
         window.removeEventListener("resize", onResizeEventRef.current);
-        document.removeEventListener('dblclick', clickEventRef.current)
+        document.removeEventListener('dblclick', dbclickEventRef.current)
+        document.removeEventListener('click', clickEventRef.current)
       }
     };
   }, [geoJson, borderGeoJson])
