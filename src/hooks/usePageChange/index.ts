@@ -4,8 +4,9 @@ import { useLoadingStore } from "@/store/loading";
 import gsap from "gsap";
 
 export default () => {
-  const { setLayerInfo } = useLayerStore((state) => ({
+  const { setLayerInfo, id } = useLayerStore((state) => ({
     setLayerInfo: state.setLayerInfo,
+    id: state.id,
   }))
 
   const { setLoading } = useLoadingStore((state) => ({
@@ -23,6 +24,7 @@ export default () => {
   }));
 
   const setPageChange = (info: LayerInfo) => {
+    if (id == info.id) return
     setLoading(true)
     setLayerInfo(info)
 
