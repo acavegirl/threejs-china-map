@@ -115,6 +115,19 @@ export default (cameraPos: PosV3) => {
     setBoxHelperVisibility(true);
   }
 
+  /**
+   * 旋转角度锁定
+   * @returns 
+   */
+  const lockAngle = () => {
+    if (!control.current) return;
+    // 垂直旋转限制
+    control.current.maxPolarAngle = Math.PI;
+    // 水平旋转限制
+    control.current.minAzimuthAngle = -Math.PI/2;
+    control.current.maxAzimuthAngle = Math.PI/2;
+  }
+
   return {
     container,
     scene,
@@ -136,5 +149,6 @@ export default (cameraPos: PosV3) => {
     setBoxHelperObj,
     setBoxHelperVisibility,
     loadModels,
+    lockAngle,
   }
 }

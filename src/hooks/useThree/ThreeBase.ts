@@ -24,11 +24,6 @@ class ThreeBase {
     this.renderer = initRenderer(el);
     // this.CSSRenderer = initCSSRender(el);
     this.control = new OrbitControls(this.camera, el);
-    // // 垂直旋转限制
-    // this.control.maxPolarAngle = Math.PI;
-    // // 水平旋转限制
-    // this.control.minAzimuthAngle = -Math.PI/2;
-    // this.control.maxAzimuthAngle = Math.PI/2;
     this.axesHelper = initAxesHelper();
     this.renderPass = initRenderPass(this.scene, this.camera)
     this.composer = initComposer(this.renderer)
