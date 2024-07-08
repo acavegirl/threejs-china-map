@@ -11,6 +11,7 @@ import SelectionTool from "./components/SelectionTool";
 import {Loading} from '@jiaminghi/data-view-react';
 import { color } from "d3";
 import Popover from "./components/Popover";
+import Earth from "./components/Earth";
 
 export default () => {
   const { layerType } = useLayerStore((state) => ({
@@ -56,9 +57,16 @@ export default () => {
             </>
           )
         }
-        <DataView />
+        {
+          layerType == 'earth' && (
+            <>
+              <Earth />
+            </>
+          )
+        }
+        {/* <DataView />
         <SelectionTool />
-        <Popover />
+        <Popover /> */}
       </div>
     </div>
   )

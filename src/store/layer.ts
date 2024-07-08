@@ -12,8 +12,8 @@ interface LayerState {
 }
 
 export const useLayerStore = create<LayerState>()((set) =>({
-    id: 'map',
-    type: 'map',
+    id: 'earth',
+    type: 'earth',
     setLayerInfo: (info) => {
       return set(() => ({
         id: info.id,
