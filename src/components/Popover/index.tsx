@@ -1,6 +1,10 @@
 import { usePopoverStore } from '@/store/popover'
 import { usePopDOMStore } from '@/store/dom';
 import { useEffect, useRef } from 'react';
+import {
+  CloseCircleOutlined
+} from '@ant-design/icons';
+import gsap from "gsap";
 
 
 export default () => {
@@ -10,11 +14,16 @@ export default () => {
 
   const ref = useRef(null);
   const setRef = usePopDOMStore((state) => state.setRef);
+  const popDOMRef = usePopDOMStore((state) => state.popDOMRef);
 
   useEffect(() => {
     if (!ref.current) return
     setRef(ref);
   }, [ref.current, setRef]);
+
+  const closeFn = () => {
+    gsap.to(popDOMRef.current, {opacity: 0})
+  }
 
   return (
     <>
@@ -30,8 +39,12 @@ export default () => {
           display: 'inline-block'
         }}
       >
-        <h3>{name}</h3>
-        <p>{data}</p>
+        <CloseCircleOutlined style={{position: 'absolute', right: '5px', top: '5px'}} onClick={closeFn} />
+        <div style={{paddingTop: '5px'}}>
+          <h3>{name}</h3>
+          <p>{data}</p>
+        </div>
+        
       </div>
     </>
   )
