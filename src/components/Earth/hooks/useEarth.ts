@@ -10,7 +10,21 @@ import metalnessTextureImg from "@/assets/img/earth_metalness.jpg"
 import bumpTextureImg from "@/assets/img/earth_bump.jpg"
 import roughnessTextureImg from "@/assets/img/earth_roughness.png"
 import cloudsTextureImg from "@/assets/img/earth_clouds.jpg"
+import { lonLauToRadian } from '@/utils/transform'
 
+const cities = [
+	{ name: "Mumbai", id: 1356226629, lat: 19.0758, lon: 72.8775, country: "India" },
+	{ name: "Moscow", id: 1643318494, lat: 55.7558, lon: 37.6178, country: "Russia" },
+	{ name: "Xiamen", id: 1156212809, lat: 24.4797, lon: 118.0819, country: "China" },
+	{ name: "Phnom Penh", id: 1116260534, lat: 11.5696, lon: 104.9210, country: "Cambodia" },
+	{ name: "Chicago", id: 1840000494, lat: 41.8373, lon: -87.6862, country: "United States" },
+	{ name: "Bridgeport", id: 1840004836, lat: 41.1918, lon: -73.1953, country: "United States" },
+	{ name: "Mexico City", id: 1484247881, lat:19.4333, lon: -99.1333 , country: "Mexico" },
+	{ name: "Karachi", id: 1586129469, lat:24.8600, lon: 67.0100 , country: "Pakistan" },
+	{ name: "London", id: 1826645935, lat:51.5072, lon: -0.1275 , country: "United Kingdom" },
+	{ name: "Boston", id: 1840000455, lat:42.3188, lon: -71.0846 , country: "United States" },
+	{ name: "Taichung", id: 1158689622, lat:24.1500, lon: 120.6667 , country: "Taiwan" },
+]
 
 export function useEarth() {
 
@@ -29,6 +43,7 @@ export function useEarth() {
   } = useThree([0, -100, 20])
 
   const onResizeEventRef = useRef<any>()
+  const earthObject3DRef = useRef<any>()
 
 
   /**
@@ -59,7 +74,7 @@ export function useEarth() {
    * 加载地图
    */
   const loadEarth = () => {
-    const earthObject3D = new THREE.Object3D()
+    earthObject3DRef.current = new THREE.Object3D()
     // 半径，宽度片段数，高度片段数
     const earthGeometry = new THREE.SphereGeometry(10, 600, 600);
     const earthTexture = new THREE.TextureLoader().load(earthTextureImg);
@@ -88,22 +103,36 @@ export function useEarth() {
     })
     const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
 
-    earthObject3D.add(earth)
-    earthObject3D.add(cloud)
-    earthObject3D.rotateX(Math.PI/2)
-    earthObject3D.rotateY(Math.PI)
-    scene.current?.add(earthObject3D)
+    // loadSpots()
+
+    earthObject3DRef.current.add(earth)
+    earthObject3DRef.current.add(cloud)
+    earthObject3DRef.current.rotateX(Math.PI/2)
+    earthObject3DRef.current.rotateY(Math.PI)
+    scene.current?.add(earthObject3DRef.current)
     const uid = uuid()
     renderMixins.set(uid, ()=>{
-      earth.rotation.y +=0.005
-	    cloud.rotation.y +=0.004
+      // earth.rotation.y +=0.005
+	    // cloud.rotation.y +=0.004
+      earthObject3DRef.current.rotation.y +=0.005
     })
   }
 
   /**
-   * 加载圆点
+   * 加载坐标点
    */
   const loadSpots = () => {
+    const mat = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+    cities.forEach(city => {
+      const geo = new THREE.RingGeometry( 0.2, 0.13, 32 );
+      const ring = new THREE.Mesh( geo, mat );
+      const cityEciPosition = lonLauToRadian(city.lon, city.lat, 9.3)
+      // 指定位置給圖釘
+      ring.position.set(cityEciPosition.x, -cityEciPosition.z, -cityEciPosition.y)	
+      // 圖釘永遠都看像世界中心，所以不會歪斜。
+      ring.lookAt(new THREE.Vector3(0,0,0))
+      earthObject3DRef.current.add(ring)
+    })
   }
 
 
@@ -121,6 +150,8 @@ export function useEarth() {
       loadLights()
       scene.current?.add(axesHelper.current as THREE.AxesHelper)
       loadEarth()
+      loadSpots()
+      
       control.current?.update()
       render()
     })
