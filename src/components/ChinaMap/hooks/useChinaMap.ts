@@ -4,7 +4,7 @@ import { initDirectionalLight } from '@/utils/light'
 import { LightData, PosV3 } from '@/types/data'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
-import { XYCoordType, generateFlyLineTrail, generateMapObject3D, generateMapSpot, generateParticlesBG } from '@/utils/drawMap'
+import { XYCoordType, generateFlyLineTrail, generateMapObject3D, generateMapSpot, generateParticlesBG, hideLabelModel } from '@/utils/drawMap'
 import { flyTrailAnime, particlesAnime, spotAnime, zoomMap } from '@/utils/anime'
 import { ProjectionFnParamType } from '@/types/chinaMap'
 import { GeoJsonType } from '@/types/geojson'
@@ -189,7 +189,7 @@ export function useChinaMap() {
     const objectCSS3D = new CSS3DSprite(element);
     objectCSS3D.name = 'label3d';
     objectCSS3D.position.set(
-      label2dData.featureCenterCoord[0],
+      label2dData.featureCenterCoord[0]+6,
       -label2dData.featureCenterCoord[1]+2,
       mapConfig.spotZIndex+2
     )
@@ -199,9 +199,8 @@ export function useChinaMap() {
 
   // 坐标点点击事件
   const onModelClick = () => {
-    let timer: any = null
     const handler = (event: MouseEvent) => {
-      clearTimeout(timer)
+      // clearTimeout(timer)
       if (!container.current) return;
       const el = container.current as HTMLElement
       const mouse = new THREE.Vector2(
@@ -222,53 +221,48 @@ export function useChinaMap() {
 
     const modelList: any = []
     modelObject3DRef.current?.traverse((mesh: any) => {
-      if (!(mesh instanceof THREE.Mesh) || mesh.name!=='锥体') return undefined
+      if (!(mesh instanceof THREE.Mesh)) return undefined
       const { material } = mesh
       mesh.material = material.clone()
       modelList.push(mesh)
       return undefined
     })
     const clickHandler = (event: MouseEvent) => {
-      clearTimeout(timer)
-      timer = setTimeout(function () {
-        if (!container.current) return;
-        const el = container.current as HTMLElement
-        const mouse = new THREE.Vector2(
-          (event.clientX / el.offsetWidth) * 2 - 1,
-          -(event.clientY / el.offsetHeight) * 2 + 1
-        )
-        const raycaster = new THREE.Raycaster()
-        raycaster.setFromCamera(mouse, camera.current!)
-        const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
-        if (size(intersects) <= 0) return undefined
-        const pointModel = <any>intersects[0].object
-        if (!pointModel) return undefined
-        // 当前未被点击
-        if (pointModel.parent.userData.clicked === false) {
-          pointModel.parent.userData.clicked = true
-          pointModel.parent?.traverse((item: any) => {
-            if (!(item instanceof CSS3DSprite)) return;
-            item.visible = true
-          })
-        } else {
-          pointModel.parent.userData.clicked = false
-          pointModel.parent?.traverse((item: any) => {
-            if (!(item instanceof CSS3DSprite)) return;
-            item.visible = false
-          })
-        }
+      if (!container.current) return;
+      const el = container.current as HTMLElement
+      const mouse = new THREE.Vector2(
+        (event.clientX / el.offsetWidth) * 2 - 1,
+        -(event.clientY / el.offsetHeight) * 2 + 1
+      )
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(mouse, camera.current!)
+      const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
+      if (size(intersects) <= 0) {
         modelList.forEach((child: any) => {
-          if (child.parent.userData.clicked) {
-            child.material.emissive.setHex(0xff0000)
-          } else {
-            child.material.emissive.setHex(child.currentHex)
-          }
-          
+          child.material.emissive.setHex(child.currentHex)
         })
-      }, 300)
+        hideLabelModel(modelObject3DRef.current)
+        return undefined
+      }
+      const pointModel = <any>intersects[0].object
+
+      modelList.forEach((child: any) => {
+        child.material.emissive.setHex(child.currentHex)
+      })
+      hideLabelModel(modelObject3DRef.current)
+
+      if (!pointModel || pointModel.name !== '锥体') return undefined
+      pointModel.material.currentHex =
+      pointModel.material.currentHex ?? pointModel.material.emissive.getHex()
+      pointModel.material.emissive.setHex(0xff0000)
+
+      pointModel.parent?.traverse((item: any) => {
+        if (!(item instanceof CSS3DSprite)) return;
+        item.visible = true
+      })
     }
-    document.addEventListener('dblclick', handler)
-    document.addEventListener('click', clickHandler)
+    document.addEventListener('click', handler)
+    document.addEventListener('mousemove', clickHandler)
     dbclickEventRef.current = handler
     clickEventRef.current = clickHandler
   }
@@ -330,8 +324,8 @@ export function useChinaMap() {
     return () => {
       if (onResizeEventRef.current) {
         window.removeEventListener("resize", onResizeEventRef.current);
-        document.removeEventListener('dblclick', dbclickEventRef.current)
-        document.removeEventListener('click', clickEventRef.current)
+        document.removeEventListener('click', dbclickEventRef.current)
+        document.removeEventListener('mousemove', clickEventRef.current)
       }
     };
   }, [geoJson, borderGeoJson])

@@ -636,6 +636,10 @@ const createCurveLine = (start: any, end: any, pointNum: number, color: any, opa
 }
 
 
+/**
+ * 隐藏CSS3D label
+ * @param modelList 
+ */
 export const hideLabelModel = (modelList: any) => {
   // console.log('modelList', modelList)
   modelList?.traverse((item: any) => {
