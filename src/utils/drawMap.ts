@@ -13,6 +13,7 @@ import {
 import type { ProjectionFnParamType } from "@/types/chinaMap"
 import { mapConfig, particlesBGConfig } from '@/configs/chinaMap';
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader";
+import { CSS3DSprite } from "three/examples/jsm/renderers/CSS3DRenderer";
 export type XYCoordType = [number, number]
 
 interface Label2dDataType {
@@ -632,4 +633,13 @@ const createCurveLine = (start: any, end: any, pointNum: number, color: any, opa
 
   const flyLine = new THREE.Line(geometry, material)
   return { flyLine, curve }
+}
+
+
+export const hideLabelModel = (modelList: any) => {
+  // console.log('modelList', modelList)
+  modelList?.traverse((item: any) => {
+    if (!(item instanceof CSS3DSprite)) return;
+    item.visible = false
+  })
 }
