@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import gsap from "gsap";
 import { mapConfig, particlesBGConfig } from "../configs/chinaMap";
+import { PosV3 } from "@/types/data";
+import { lerp } from "three/src/math/MathUtils";
 
 /**
  * 动态地图缩放大小
@@ -138,4 +140,34 @@ export const particlesAnime = (particles: any) => {
   particles.geometry.attributes.position.needsUpdate = true;
   particles.geometry.attributes.scale.needsUpdate = true;
   count+=0.1
+}
+
+let lerpTarget: any
+let moveAlongTropical = new THREE.Vector3(0,0,0)
+let moveProgress: number
+
+export const initLerp = (lerp: any, cameraPos: PosV3, progress: number) => {
+  lerpTarget = lerp
+  moveAlongTropical.set(...cameraPos)
+  moveProgress = progress
+
+  console.log(lerpTarget, moveAlongTropical, moveProgress)
+}
+
+export const cameraMoveAmine = (camera: any, control: any) => {
+  // 用戶有选取的城市才会执行
+  if (lerpTarget) {
+    // 使镜头按照函数图像移动
+    let moveVolume = Math.pow(moveProgress*2-1, 4.)
+    // 绑定数值给moveAlongTropical
+    moveAlongTropical.lerp(lerpTarget, 0.05).normalize().multiplyScalar(70)
+    // 将camera位置绑定到moveAlongTropical上
+    camera.current?.position.set(moveAlongTropical.x, moveAlongTropical.y, moveVolume*moveAlongTropical.z).normalize().multiplyScalar(70)
+    control.current.update()
+    moveProgress*=0.97
+
+    if (moveProgress < 0.01) {
+      lerpTarget = null
+    }
+  }
 }

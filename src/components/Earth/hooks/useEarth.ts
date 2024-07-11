@@ -11,23 +11,25 @@ import bumpTextureImg from "@/assets/img/earth_bump.jpg"
 import roughnessTextureImg from "@/assets/img/earth_roughness.png"
 import cloudsTextureImg from "@/assets/img/earth_clouds.jpg"
 import { lonLauToRadian } from '@/utils/transform'
+import { cameraMoveAmine, initLerp } from '@/utils/anime'
 
-const cities = [
-	{ name: "Mumbai", id: 1356226629, lat: 19.0758, lon: 72.8775, country: "India" },
-	{ name: "Moscow", id: 1643318494, lat: 55.7558, lon: 37.6178, country: "Russia" },
-	{ name: "Xiamen", id: 1156212809, lat: 24.4797, lon: 118.0819, country: "China" },
-	{ name: "Phnom Penh", id: 1116260534, lat: 11.5696, lon: 104.9210, country: "Cambodia" },
-	{ name: "Chicago", id: 1840000494, lat: 41.8373, lon: -87.6862, country: "United States" },
-	{ name: "Bridgeport", id: 1840004836, lat: 41.1918, lon: -73.1953, country: "United States" },
-	{ name: "Mexico City", id: 1484247881, lat:19.4333, lon: -99.1333 , country: "Mexico" },
-	{ name: "Karachi", id: 1586129469, lat:24.8600, lon: 67.0100 , country: "Pakistan" },
-	{ name: "London", id: 1826645935, lat:51.5072, lon: -0.1275 , country: "United Kingdom" },
-	{ name: "Boston", id: 1840000455, lat:42.3188, lon: -71.0846 , country: "United States" },
-	{ name: "Taichung", id: 1158689622, lat:24.1500, lon: 120.6667 , country: "Taiwan" },
+export const cities = [
+	{ label: "Mumbai", value: 1356226629, lat: 19.0758, lon: 72.8775, country: "India" },
+	{ label: "Moscow", value: 1643318494, lat: 55.7558, lon: 37.6178, country: "Russia" },
+	{ label: "Xiamen", value: 1156212809, lat: 24.4797, lon: 118.0819, country: "China" },
+	{ label: "Phnom Penh", value: 1116260534, lat: 11.5696, lon: 104.9210, country: "Cambodia" },
+	{ label: "Chicago", value: 1840000494, lat: 41.8373, lon: -87.6862, country: "United States" },
+	{ label: "Bridgeport", value: 1840004836, lat: 41.1918, lon: -73.1953, country: "United States" },
+	{ label: "Mexico City", value: 1484247881, lat:19.4333, lon: -99.1333 , country: "Mexico" },
+	{ label: "Karachi", value: 1586129469, lat:24.8600, lon: 67.0100 , country: "Pakistan" },
+	{ label: "London", value: 1826645935, lat:51.5072, lon: -0.1275 , country: "United Kingdom" },
+	{ label: "Boston", value: 1840000455, lat:42.3188, lon: -71.0846 , country: "United States" },
+	{ label: "Taichung", value: 1158689622, lat:24.1500, lon: 120.6667 , country: "Taiwan" },
 ]
 
-export function useEarth() {
+// export const citiesRing: any = []
 
+export function useEarth() {
   const {
     container,
     scene,
@@ -45,12 +47,14 @@ export function useEarth() {
   const onResizeEventRef = useRef<any>()
   const earthObject3DRef = useRef<any>()
 
+  const [citiesRing, setCitiesRing] = useState([])
+
 
   /**
    * 加载灯光
    */
   const loadLights = () => {
-    const light = initAmbientLight(3)
+    const light = initAmbientLight(2)
     scene.current?.add(light)
     const lightData: LightData = [
       [[60, -80, 6], 3],
@@ -82,15 +86,16 @@ export function useEarth() {
     const metalnessTexture = new THREE.TextureLoader().load(metalnessTextureImg)
     const roughnessTexture = new THREE.TextureLoader().load(roughnessTextureImg)
     const bumpTexture = new THREE.TextureLoader().load(bumpTextureImg)
+    // 这里贴图可能加载缓慢
     const earthMaterial = new THREE.MeshStandardMaterial({
-        map: earthTexture,
-        displacementMap: displacementTexture,
-        metalnessMap: metalnessTexture,
-        roughnessMap: roughnessTexture,
-        bumpMap: bumpTexture,
-        side: THREE.DoubleSide,
-        displacementScale: 0.5,
-	      metalness:1,
+      map: earthTexture,
+      displacementMap: displacementTexture,
+      metalnessMap: metalnessTexture,
+      roughnessMap: roughnessTexture,
+      bumpMap: bumpTexture,
+      side: THREE.DoubleSide,
+      displacementScale: 0.5,
+      metalness:1,
     })
     const earth = new THREE.Mesh(earthGeometry, earthMaterial)
 
@@ -112,9 +117,8 @@ export function useEarth() {
     scene.current?.add(earthObject3DRef.current)
     const uid = uuid()
     renderMixins.set(uid, ()=>{
-      // earth.rotation.y +=0.005
-	    // cloud.rotation.y +=0.004
-      earthObject3DRef.current.rotation.y +=0.005
+      cloud.rotation.y += 0.002
+      // earthObject3DRef.current.rotation.y +=0.005
     })
   }
 
@@ -123,33 +127,54 @@ export function useEarth() {
    */
   const loadSpots = () => {
     const mat = new THREE.MeshBasicMaterial( { color: 0xffff00, side: THREE.DoubleSide } );
+    const citiesRingArr: any = []
     cities.forEach(city => {
       const geo = new THREE.RingGeometry( 0.2, 0.13, 32 );
       const ring = new THREE.Mesh( geo, mat );
       const cityEciPosition = lonLauToRadian(city.lon, city.lat, 9.3)
       // 指定位置給圖釘
-      ring.position.set(cityEciPosition.x, -cityEciPosition.z, -cityEciPosition.y)	
+      ring.position.set(cityEciPosition.x, -cityEciPosition.z, -cityEciPosition.y)
+      // 这里ring的坐标轴是地球坐标轴，不是世界坐标轴
       // 圖釘永遠都看像世界中心，所以不會歪斜。
       ring.lookAt(new THREE.Vector3(0,0,0))
       earthObject3DRef.current.add(ring)
+      citiesRingArr.push({
+        ...city,
+        position: ring.position.toArray(),
+      })
+    })
+    setCitiesRing(citiesRingArr)
+
+    const uid = uuid()
+    renderMixins.set(uid, ()=>{
+      cameraMoveAmine(camera, control)
     })
   }
 
 
-  // 坐标点点击事件
-  const onModelClick = () => {
+  // 选择城市后的回调
+  const selectCity = (position: PosV3) => {
+    if (!camera.current) return
+    // 传入的是ring的地球坐标，要转成世界坐标
+    // camera.current?.position.set(-position[0], position[2], position[1]).multiplyScalar(5)
+    // control.current?.update()
     
+    // 當用戶選城市時，更新lerp移動的結果參數
+	  let lerpTarget = new THREE.Vector3(0,0,0).set(-position[0], position[2], position[1]).multiplyScalar(5)
+    initLerp(lerpTarget, camera.current.position.toArray(), 1)
+    // 这里不能调用set anime，set amine不能放在回调里
   }
-
 
   useEffect(() => {
     if (!container.current || !control.current || !axesHelper.current) return;
 
     loadModels([
-    ]).then(()=> {
+    ]).then(()=>{
+      loadEarth()
+    }).then(()=> {
       loadLights()
       scene.current?.add(axesHelper.current as THREE.AxesHelper)
-      loadEarth()
+      
       loadSpots()
       
       control.current?.update()
@@ -182,6 +207,8 @@ export function useEarth() {
 
   return {
     container,
+    selectCity,
+    citiesRing
   }
 }
 

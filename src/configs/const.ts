@@ -1,3 +1,5 @@
+const SCREENSIZE = [1960, 1080]
+
 export const MODEL_EQUIPMENT_ENUM = {
   PRINCIPAL_AXIS: '主轴',
   YAWMOTOR: '偏航电机',

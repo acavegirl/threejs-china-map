@@ -9,13 +9,14 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { PosV3 } from '@/types/data'
 import { useLoadingStore } from "@/store/loading";
+import { CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer'
 
 export default (cameraPos: PosV3) => {
   const container = useRef()
   const scene = useRef<THREE.Scene>()
   const camera = useRef<THREE.PerspectiveCamera>()
   const renderer = useRef<THREE.WebGLRenderer>()
-  const CSSRenderer = useRef<CSS2DRenderer>()
+  const CSSRender3D = useRef<CSS3DRenderer>()
   const renderPass = useRef<RenderPass>()
   const composer = useRef<EffectComposer>()
   const control = useRef<OrbitControls>()
@@ -39,7 +40,7 @@ export default (cameraPos: PosV3) => {
       scene: scene.current,
       camera: camera.current,
       renderer: renderer.current,
-      // CSSRenderer: CSSRenderer.current,
+      CSSRender3D: CSSRender3D.current,
       renderPass: renderPass.current,
       composer: composer.current,
       control: control.current,
@@ -79,7 +80,7 @@ export default (cameraPos: PosV3) => {
   const renderOnce = () => {
     composer.current && (composer.current as EffectComposer).render();
     renderMixins.forEach((mixin) => mixin())
-    CSSRenderer.current && scene.current && camera.current && (CSSRenderer.current as CSS2DRenderer).render(scene.current, camera.current)
+    CSSRender3D.current && scene.current && camera.current && (CSSRender3D.current as CSS3DRenderer).render(scene.current, camera.current)
   }
 
   /**
@@ -99,7 +100,7 @@ export default (cameraPos: PosV3) => {
     composer.current && (composer.current as EffectComposer).render();
 
     renderMixins.forEach((mixin) => mixin())
-    CSSRenderer.current && scene.current && camera.current && (CSSRenderer.current as CSS2DRenderer).render(scene.current, camera.current)
+    CSSRender3D.current && scene.current && camera.current && (CSSRender3D.current as CSS3DRenderer).render(scene.current, camera.current)
 
     requestAnimationFrame(() => render())
   }
@@ -134,7 +135,7 @@ export default (cameraPos: PosV3) => {
     camera,
     axesHelper,
     renderer,
-    CSSRenderer,
+    CSSRender3D,
     renderPass,
     composer,
     control,

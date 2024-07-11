@@ -4,7 +4,7 @@ import { initDirectionalLight } from '@/utils/light'
 import { LightData, PosV3 } from '@/types/data'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
-import { XYCoordType, generateFlyLineTrail, generateMapObject3D, generateMapSpot, generateParticlesBG } from '@/utils/drawMap'
+import { XYCoordType, generateFlyLineTrail, generateMapObject3D, generateMapSpot, generateParticlesBG, hideLabelModel } from '@/utils/drawMap'
 import { flyTrailAnime, particlesAnime, spotAnime, zoomMap } from '@/utils/anime'
 import { ProjectionFnParamType } from '@/types/chinaMap'
 import { GeoJsonType } from '@/types/geojson'
@@ -12,18 +12,14 @@ import { mapConfig } from '@/configs/chinaMap'
 import { size } from 'lodash'
 import ChinaGeoJson from '@/assets/json/ChinaGeo.json';
 import ChinaBorderGeoJson from '@/assets/json/ChinaBorderGeo.json';
-import { usePopDOMStore } from '@/store/dom';
-import { usePopoverStore } from '@/store/popover';
-import gsap from "gsap";
+import { CSS3DRenderer, CSS3DObject, CSS3DSprite } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
+import { useLabelModelStore } from '@/store/model'
 
 export function useChinaMap() {
 
   const setPageChange = usePageChange()
-  const { popDOMRef } = usePopDOMStore((state) => ({
-    popDOMRef: state.popDOMRef,
-  }));
-  const { setPopoverData } = usePopoverStore((state) => ({
-    setPopoverData: state.setPopoverData,
+  const { setModelList } = useLabelModelStore((state) => ({
+    setModelList: state.setModelList,
   }));
 
   const {
@@ -38,6 +34,7 @@ export function useChinaMap() {
     render,
     control,
     loadModels,
+    CSSRender3D,
   } = useThree([5, -60, 100])
 
   const onResizeEventRef = useRef<any>()
@@ -164,18 +161,46 @@ export function useChinaMap() {
       clonedModel.scale.set(0.2, 0.2, 0.6);
       // clonedModel.rotateX(-Math.PI / 8);
       // 在模型上挂载数据
-      clonedModel.userData = {id: `${clonedModel.position.x}_${clonedModel.position.y}`}
+      clonedModel.userData = {id: `${clonedModel.position.x}_${clonedModel.position.y}`, clicked: false}
       modelObject3DRef.current.add(clonedModel);
-      
+
+      const css3dObject = createLabel(item);
+      css3dObject.visible = false;
+      clonedModel.add(css3dObject);
     });
+    setModelList(modelObject3DRef.current)
+
     mapObject3DRef.current.add(modelObject3DRef.current);
+  }
+
+  const createLabel = (label2dData: any) => {
+    const element = document.createElement("div");
+    element.style.color = '#fff';
+    element.style.background = "radial-gradient(ellipse, rgba(30, 59, 112, 0.05), rgba(30, 59, 112, 0.5))";
+    element.style.border = "2px solid rgba(0, 255, 255, 0.1)";
+    element.style.padding = "0 20px";
+    element.innerHTML = `
+      <div>
+        <h3>${label2dData.featureName}</h3>
+        <p>${label2dData.featureCenterCoord[0]}_${label2dData.featureCenterCoord[1]}</p>
+      </div>
+    `;
+
+    const objectCSS3D = new CSS3DSprite(element);
+    objectCSS3D.name = 'label3d';
+    objectCSS3D.position.set(
+      label2dData.featureCenterCoord[0]+6,
+      -label2dData.featureCenterCoord[1]+2,
+      mapConfig.spotZIndex+2
+    )
+    objectCSS3D.scale.set(0.1, 0.1, 0.1);
+    return objectCSS3D;
   }
 
   // 坐标点点击事件
   const onModelClick = () => {
-    let timer: any = null
     const handler = (event: MouseEvent) => {
-      clearTimeout(timer)
+      // clearTimeout(timer)
       if (!container.current) return;
       const el = container.current as HTMLElement
       const mouse = new THREE.Vector2(
@@ -187,6 +212,7 @@ export function useChinaMap() {
       const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
       if (size(intersects) <= 0) return undefined
       const pointModel = <any>intersects[0].object
+      // console.log('双击')
       setPageChange({
         id: pointModel.parent.userData.id,
         type: 'factory',
@@ -202,45 +228,41 @@ export function useChinaMap() {
       return undefined
     })
     const clickHandler = (event: MouseEvent) => {
-      clearTimeout(timer)
-      timer = setTimeout(function () {
-        if (!container.current) return;
-        const el = container.current as HTMLElement
-        const mouse = new THREE.Vector2(
-          (event.clientX / el.offsetWidth) * 2 - 1,
-          -(event.clientY / el.offsetHeight) * 2 + 1
-        )
-        const raycaster = new THREE.Raycaster()
-        raycaster.setFromCamera(mouse, camera.current!)
-        const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
-        if (size(intersects) <= 0) return undefined
-        const pointModel = <any>intersects[0].object
-        if (!pointModel) return undefined
+      if (!container.current) return;
+      const el = container.current as HTMLElement
+      const mouse = new THREE.Vector2(
+        (event.clientX / el.offsetWidth) * 2 - 1,
+        -(event.clientY / el.offsetHeight) * 2 + 1
+      )
+      const raycaster = new THREE.Raycaster()
+      raycaster.setFromCamera(mouse, camera.current!)
+      const intersects = raycaster.intersectObject(modelObject3DRef.current!, true)
+      if (size(intersects) <= 0) {
         modelList.forEach((child: any) => {
           child.material.emissive.setHex(child.currentHex)
         })
-        pointModel.material.currentHex =
-        pointModel.material.currentHex ?? pointModel.material.emissive.getHex()
-        pointModel.material.emissive.setHex(0xff0000)
+        hideLabelModel(modelObject3DRef.current)
+        return undefined
+      }
+      const pointModel = <any>intersects[0].object
 
-        let tl = gsap.timeline()
-        // 把当前popover隐藏
-        if (popDOMRef.current?.style.opacity == 0) {
-          tl.to(popDOMRef.current, {opacity: 0, left: `${event.clientX + 10}px`, top: `${event.clientY + 10}px`}, 0.1)
-        } else {
-          tl.to(popDOMRef.current, {opacity: 0}, 0.2)
-        }
-        // 更改popover数据
-        setPopoverData({
-          name: pointModel.parent.userData.id,
-          data: pointModel.parent.userData.id
-        })
-        // 显示popover在新的位置
-        tl.to(popDOMRef.current, {opacity: 1, left: `${event.clientX + 10}px`, top: `${event.clientY + 10}px`}, 0.2)
-      }, 500)
+      modelList.forEach((child: any) => {
+        child.material.emissive.setHex(child.currentHex)
+      })
+      hideLabelModel(modelObject3DRef.current)
+
+      if (!pointModel || pointModel.name !== '锥体') return undefined
+      pointModel.material.currentHex =
+      pointModel.material.currentHex ?? pointModel.material.emissive.getHex()
+      pointModel.material.emissive.setHex(0xff0000)
+
+      pointModel.parent?.traverse((item: any) => {
+        if (!(item instanceof CSS3DSprite)) return;
+        item.visible = true
+      })
     }
-    document.addEventListener('dblclick', handler)
-    document.addEventListener('click', clickHandler)
+    document.addEventListener('click', handler)
+    document.addEventListener('mousemove', clickHandler)
     dbclickEventRef.current = handler
     clickEventRef.current = clickHandler
   }
@@ -262,7 +284,7 @@ export function useChinaMap() {
   }
 
   useEffect(() => {
-    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current || !control.current || !popDOMRef.current) return;
+    if (!container.current || !borderGeoJson || !geoJson || !axesHelper.current || !control.current) return;
     // scene.current?.add(axesHelper.current)
     control.current?.target.setX(10)
     loadBG()
@@ -281,7 +303,7 @@ export function useChinaMap() {
     })
 
     const onResizeEvent = () => {
-      if (!renderer.current?.domElement || !camera.current) return;
+      if (!renderer.current?.domElement || !camera.current || !CSSRender3D.current) return;
       const canvas = renderer.current.domElement
       // 更新摄像头
       camera.current.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -291,6 +313,8 @@ export function useChinaMap() {
       renderer.current.setSize(canvas.clientWidth, canvas.clientHeight, false);
       // 设置渲染器的像素比例
       renderer.current.setPixelRatio(window.devicePixelRatio);
+      // 更新渲染器
+      CSSRender3D.current.setSize(canvas.clientWidth, canvas.clientHeight);
       
     };
     onResizeEvent()
@@ -300,8 +324,8 @@ export function useChinaMap() {
     return () => {
       if (onResizeEventRef.current) {
         window.removeEventListener("resize", onResizeEventRef.current);
-        document.removeEventListener('dblclick', dbclickEventRef.current)
-        document.removeEventListener('click', clickEventRef.current)
+        document.removeEventListener('click', dbclickEventRef.current)
+        document.removeEventListener('mousemove', clickEventRef.current)
       }
     };
   }, [geoJson, borderGeoJson])

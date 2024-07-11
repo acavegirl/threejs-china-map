@@ -10,7 +10,6 @@ import { ReturnFactory, ReturnMap, CustomBtn } from "@/components/ReturnBtn"
 import SelectionTool from "./components/SelectionTool";
 import {Loading} from '@jiaminghi/data-view-react';
 import { color } from "d3";
-import Popover from "./components/Popover";
 import Earth from "./components/Earth";
 
 export default () => {
