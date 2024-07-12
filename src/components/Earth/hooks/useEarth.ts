@@ -11,7 +11,9 @@ import bumpTextureImg from "@/assets/img/earth_bump.jpg"
 import roughnessTextureImg from "@/assets/img/earth_roughness.png"
 import cloudsTextureImg from "@/assets/img/earth_clouds.jpg"
 import { lonLauToRadian } from '@/utils/transform'
-import { cameraMoveAmine, initLerp } from '@/utils/anime'
+import { cameraMoveAmine, flyTrailAnime, initLerp } from '@/utils/anime'
+import { createCurve3Line } from '@/utils/drawMap'
+import { mapConfig } from '@/configs/chinaMap'
 
 export const cities = [
 	{ label: "Mumbai", value: 1356226629, lat: 19.0758, lon: 72.8775, country: "India" },
@@ -48,6 +50,9 @@ export function useEarth() {
   const earthObject3DRef = useRef<any>()
 
   const [citiesRing, setCitiesRing] = useState([])
+  const flySpotListRef = useRef<any>([])
+
+  const ringPositionsRef = useRef<any>([])
 
 
   /**
@@ -65,13 +70,6 @@ export function useEarth() {
       // const lightHelper = initDirectionalLightHelper(light)
       // scene.current?.add(lightHelper);
     })
-  }
-
-  /**
-   * 加载背景
-   */
-  const loadBG = () => {
-    
   }
 
   /**
@@ -135,13 +133,14 @@ export function useEarth() {
       // 指定位置給圖釘
       ring.position.set(cityEciPosition.x, -cityEciPosition.z, -cityEciPosition.y)
       // 这里ring的坐标轴是地球坐标轴，不是世界坐标轴
-      // 圖釘永遠都看像世界中心，所以不會歪斜。
+      // 圖釘永遠都看像世界中心，所以不會歪斜
       ring.lookAt(new THREE.Vector3(0,0,0))
       earthObject3DRef.current.add(ring)
       citiesRingArr.push({
         ...city,
         position: ring.position.toArray(),
       })
+      ringPositionsRef.current.push(ring.position)
     })
     setCitiesRing(citiesRingArr)
 
@@ -149,6 +148,18 @@ export function useEarth() {
     renderMixins.set(uid, ()=>{
       cameraMoveAmine(camera, control)
     })
+  }
+
+  /**
+   * 加载飞线
+   * start 和 end 是球坐标
+   */
+  const loadFlyLine = (start: THREE.Vector3, end: THREE.Vector3) => {
+    const {flyLine} = createCurve3Line(start, end, 30, mapConfig.fly.spotColor, 1, 15)
+    const {flyLine: flyLineBG} = createCurve3Line(start, end, 300, mapConfig.fly.lineColor, mapConfig.fly.lineOpacity, 15)
+    earthObject3DRef.current.add(flyLineBG)
+    earthObject3DRef.current.add(flyLine)
+    flySpotListRef.current.push(flyLine)
   }
 
 
@@ -174,9 +185,13 @@ export function useEarth() {
     }).then(()=> {
       loadLights()
       scene.current?.add(axesHelper.current as THREE.AxesHelper)
-      
       loadSpots()
-      
+      loadFlyLine(ringPositionsRef.current[0], ringPositionsRef.current[1])
+      loadFlyLine(ringPositionsRef.current[2], ringPositionsRef.current[3])
+      const uid = uuid()
+      renderMixins.set(uid, ()=>{
+        flyTrailAnime(flySpotListRef.current)
+      })
       control.current?.update()
       render()
     })

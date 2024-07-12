@@ -88,7 +88,7 @@ export const flyTrailAnime = (flyLineList: any) => {
   if (now - timestamp > mapConfig.fly.timeDelta) {
     timestamp = now
     colorIndex++
-    if (colorIndex >= flyLineList[0].geometry.getAttribute('color').count) {
+    if (colorIndex >= flyLineList[0]?.geometry?.getAttribute('color')?.count) {
       colorIndex = 0
     }
   }

@@ -591,7 +591,7 @@ export const generateFlyLineTrail = (connectLine: [XYCoordType, XYCoordType][]) 
  * @param opacity 线的透明度
  * @returns {Line, QuadraticBezierCurve3}
  */
-const createCurveLine = (start: any, end: any, pointNum: number, color: any, opacity: number) => {
+export const createCurveLine = (start: any, end: any, pointNum: number, color: any, opacity: number) => {
   const [x0, y0, z0] = [...start];
   const [x1, y1, z1] = [...end];
   // 使用 QuadraticBezierCurve3 创建 三维二次贝塞尔曲线
@@ -632,6 +632,66 @@ const createCurveLine = (start: any, end: any, pointNum: number, color: any, opa
   })
 
   const flyLine = new THREE.Line(geometry, material)
+  return { flyLine, curve }
+}
+
+  /**
+ * 创建一条曲线实体 三维坐标版
+ * @param start 开始坐标 [x, y, z]
+ * @param end 结束坐标 [x, y, z]
+ * @param pointNum 线上点的数量
+ * @param color 线的颜色
+ * @param opacity 线的透明度
+ * @returns {Line, QuadraticBezierCurve3}
+ */
+export const createCurve3Line = (start: THREE.Vector3, end: THREE.Vector3, pointNum: number, color: any, opacity: number, vectorLen: number) => {
+  const middlePoint = new THREE.Vector3(0,0,0).addVectors(start, end).normalize().multiplyScalar(vectorLen)
+  // 使用 QuadraticBezierCurve3 创建 三维二次贝塞尔曲线
+  const curve = new THREE.QuadraticBezierCurve3(
+    start,
+    middlePoint,
+    end
+  );
+  const points = curve.getPoints(pointNum);
+
+  let colorHigh = new THREE.Color(color)
+  let colors = new Float32Array(points.length * 4)
+  points.forEach((d, i) => {
+    colors[i * 4] = colorHigh.r
+    colors[i * 4 + 1] = colorHigh.g
+    colors[i * 4 + 2] = colorHigh.b
+    colors[i * 4 + 3] = opacity
+  })
+
+  // 创建几何体
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 4))
+
+  // 材质
+  const material = new THREE.LineBasicMaterial({
+    vertexColors: true, // 顶点着色
+    transparent: true,
+    side: THREE.DoubleSide
+  })
+  const flyLine = new THREE.Line(geometry, material)
+
+  // const lineGeometry = new LineGeometry();
+  // const pointsArr: number[] = []
+  // points.forEach(point => {
+  //   pointsArr.push(...point.toArray())
+  // })
+  // lineGeometry.setPositions(pointsArr);
+  // lineGeometry.setColors(colors)
+
+  // const lineMaterial = new LineMaterial({
+  //   vertexColors: true, // 顶点着色
+  //   transparent: true,
+  //   // side: THREE.DoubleSide,
+  //   linewidth: 3,
+  // });
+  // lineMaterial.resolution.set(window.innerWidth, window.innerHeight);
+  // const flyLine = new Line2(lineGeometry, lineMaterial);
+  // console.log('flyLine',flyLine)
   return { flyLine, curve }
 }
 
