@@ -72,6 +72,14 @@ export function useEarth() {
     })
   }
 
+  const loadSkydemo = () => {
+    const skydomeTexture = new THREE.TextureLoader().load('https://storage.googleapis.com/umas_public_assets/michaelBay/free_star_sky_hdri_spherical_map_by_kirriaa_dbw8p0w%20(1).jpg')
+    const skydomeMaterial = new THREE.MeshBasicMaterial( { map: skydomeTexture, side: THREE.DoubleSide})
+    const skydomeGeometry = new THREE.SphereGeometry(120,50,50)
+    const skydome = new THREE.Mesh(skydomeGeometry, skydomeMaterial);
+    scene.current?.add(skydome);
+  }
+
   /**
    * 加载地图
    */
@@ -181,6 +189,7 @@ export function useEarth() {
 
     loadModels([
     ]).then(()=>{
+      loadSkydemo()
       loadEarth()
     }).then(()=> {
       loadLights()
