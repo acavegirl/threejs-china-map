@@ -77,6 +77,7 @@ export function useEarth() {
     const skydomeMaterial = new THREE.MeshBasicMaterial( { map: skydomeTexture, side: THREE.DoubleSide})
     const skydomeGeometry = new THREE.SphereGeometry(120,50,50)
     const skydome = new THREE.Mesh(skydomeGeometry, skydomeMaterial);
+    skydome.rotateX(Math.PI/2)
     scene.current?.add(skydome);
   }
 
@@ -170,6 +171,18 @@ export function useEarth() {
     flySpotListRef.current.push(flyLine)
   }
 
+  const loadCylinder = (posArr: PosV3[]) => {
+    posArr.forEach((item:PosV3, index:number) => {
+      const geometry = new THREE.CylinderGeometry( 1, 1, (index+1)*15, 32 ); 
+      const material = new THREE.MeshBasicMaterial( {color: 0xffff00} ); 
+      const cylinder = new THREE.Mesh( geometry, material );
+      cylinder.scale.set(0.1, 0.1, 0.1)
+      cylinder.position.set(...item)
+      cylinder.lookAt(new THREE.Vector3(0,0,0))
+      cylinder.rotateX(Math.PI/2)
+      earthObject3DRef.current.add(cylinder)
+    })
+  }
 
   // 选择城市后的回调
   const selectCity = (position: PosV3) => {
@@ -197,6 +210,7 @@ export function useEarth() {
       loadSpots()
       loadFlyLine(ringPositionsRef.current[0], ringPositionsRef.current[1])
       loadFlyLine(ringPositionsRef.current[2], ringPositionsRef.current[3])
+      loadCylinder([ringPositionsRef.current[4], ringPositionsRef.current[5]])
       const uid = uuid()
       renderMixins.set(uid, ()=>{
         flyTrailAnime(flySpotListRef.current)
